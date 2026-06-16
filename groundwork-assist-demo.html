@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groundwork Assist — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Root ─────────────────────────────────────── */
+:root {
+  --ink:    #0f1117;
+  --soil:   #1c2b1a;
+  --moss:   #2d4a29;
+  --sage:   #4a7c45;
+  --leaf:   #7ab648;
+  --cream:  #f5f0e8;
+  --parch:  #ede8dc;
+  --warm:   #faf8f4;
+  --left:   #f0ece1;
+  --accent: #c8a84b;
+  --muted:  #6b7280;
+  --red:    #d97070;
+  --blue:   #7ab0f0;
+  --border: rgba(0,0,0,0.07);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'DM Sans','Segoe UI',sans-serif;
+  font-weight: 300;
+  background: var(--warm);
+  color: var(--ink);
+  height: 100%;
+  overflow: hidden;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
+
+/* ── Nav ──────────────────────────────────────────────── */
+nav {
+  height: 53px;
+  background: rgba(250,248,244,0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.nav-logo {
+  font-family: 'Playfair Display',serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--soil);
+}
+.nav-logo .g { color: var(--leaf); }
+.nav-product {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-left: 9px;
+  padding-left: 9px;
+  border-left: 1px solid rgba(74,124,69,.28);
+}
+.nav-status { display: flex; align-items: center; gap: 8px; }
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--leaf);
+  animation: pulse 2.2s ease-in-out infinite;
+}
+.status-label { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+/* ── App layout ───────────────────────────────────────── */
+#app {
+  display: flex;
+  height: calc(100vh - 53px);
+  overflow: hidden;
+}
+
+/* ── Left panel ───────────────────────────────────────── */
+#left {
+  width: 356px;
+  flex-shrink: 0;
+  background: var(--left);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.lsec {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.eyebrow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 11px;
+}
+
+/* Ticket cards */
+.tcard {
+  padding: 10px 12px;
+  border-radius: 7px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.45);
+  transition: background .15s, border-color .15s;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  user-select: none;
+}
+.tcard:last-child { margin-bottom: 0; }
+.tcard.active { background: var(--soil); border-color: transparent; }
+.tcard:not(.active):hover { background: rgba(255,255,255,.7); }
+.tcard-name { font-size: 12.5px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+.tcard.active .tcard-name { color: var(--cream); }
+.tcard-hint { font-size: 10.5px; font-weight: 300; color: var(--muted); }
+.tcard.active .tcard-hint { color: rgba(245,240,232,.42); }
+.pbadge {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em;
+  padding: 2px 7px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.pbadge.hi { background: rgba(217,112,112,.18); color: var(--red); }
+.pbadge.no { background: rgba(122,182,72,.15); color: var(--leaf); }
+
+/* Preview scroll */
+#pscroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  min-height: 0;
+}
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+.meta-item {
+  background: rgba(255,255,255,.55);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 10px;
+}
+.meta-k {
+  font-size: 9px; font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 3px;
+}
+.meta-v { font-size: 12px; font-weight: 500; color: var(--soil); }
+.plabel {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 5px;
+}
+.psubject { font-size: 12.5px; font-weight: 500; color: var(--soil); line-height: 1.45; margin-bottom: 14px; }
+.pbody {
+  font-size: 11.5px; color: #4b5563; line-height: 1.75; white-space: pre-line;
+  background: rgba(255,255,255,.55); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 12px; margin-bottom: 14px;
+}
+.ctx-box {
+  background: rgba(28,43,26,.055);
+  border: 1px solid rgba(28,43,26,.1);
+  border-radius: 8px; padding: 11px 13px;
+}
+.ctx-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.ctx-chip {
+  font-size: 10.5px; font-weight: 500; color: var(--sage);
+  background: rgba(74,124,69,.1); border: 1px solid rgba(74,124,69,.16);
+  border-radius: 4px; padding: 2px 9px;
+}
+
+/* API key */
+.api-wrap { padding: 13px 18px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.api-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.api-label {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--sage);
+}
+.demo-tag {
+  font-size: 9px; font-weight: 600;
+  padding: 2px 7px; border-radius: 3px;
+  background: rgba(200,168,75,.1); color: var(--accent);
+}
+.api-input {
+  width: 100%; padding: 9px 11px;
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 5px;
+  font-family: 'DM Sans',sans-serif; font-size: 12px;
+  color: var(--ink); outline: none;
+  transition: border-color .2s;
+}
+.api-input:focus { border-color: var(--sage); }
+.api-hint { font-size: 10.5px; color: var(--muted); margin-top: 5px; font-weight: 300; line-height: 1.4; }
+
+/* Run button */
+.run-wrap { padding: 13px 18px; border-top: 1px solid var(--border); flex-shrink: 0; }
+#run-btn {
+  width: 100%; padding: 13px 0;
+  background: var(--soil); color: var(--cream);
+  border: none; border-radius: 5px;
+  font-family: 'DM Sans',sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background .2s;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+}
+#run-btn:hover:not([disabled]) { background: var(--moss); }
+#run-btn[disabled] { background: var(--moss); cursor: not-allowed; }
+
+/* ── Right panel ──────────────────────────────────────── */
+#right { flex: 1; overflow-y: auto; background: var(--warm); }
+
+/* Empty */
+.r-empty {
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 48px; text-align: center;
+}
+.r-empty-icon {
+  width: 60px; height: 60px; border-radius: 14px;
+  background: rgba(74,124,69,.08); border: 1px solid rgba(74,124,69,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin-bottom: 20px;
+}
+.r-empty-title {
+  font-family: 'Playfair Display',serif;
+  font-size: 22px; font-weight: 700; color: var(--soil);
+  margin-bottom: 10px; letter-spacing: -.5px;
+}
+.r-empty-sub {
+  font-size: 14px; color: var(--muted); font-weight: 300;
+  max-width: 300px; line-height: 1.75; margin-bottom: 28px;
+}
+.feat-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.feat-chip {
+  font-size: 11.5px; padding: 5px 13px;
+  background: rgba(74,124,69,.07); border: 1px solid rgba(74,124,69,.13);
+  border-radius: 100px; color: var(--sage); font-weight: 500;
+}
+
+/* Loading */
+.r-loading {
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 48px;
+}
+.r-loading-title {
+  font-family: 'Playfair Display',serif;
+  font-size: 20px; font-weight: 700; color: var(--soil);
+  margin-bottom: 6px; letter-spacing: -.4px; text-align: center;
+}
+.r-loading-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 36px; font-weight: 300; }
+.step-list { width: 100%; max-width: 380px; }
+.step-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.05);
+  opacity: .28; transition: opacity .4s;
+}
+.step-row.s-active, .step-row.s-done { opacity: 1; }
+.step-circ {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  background: rgba(0,0,0,.04); border: 1.5px solid rgba(0,0,0,.09);
+  transition: all .3s;
+}
+.step-row.s-done .step-circ {
+  background: rgba(122,182,72,.12); border-color: var(--leaf);
+  color: var(--leaf); font-weight: 700; font-size: 13px;
+}
+.step-lbl { font-size: 13px; font-weight: 300; color: var(--muted); flex: 1; transition: all .3s; }
+.step-row.s-active .step-lbl { font-weight: 500; color: var(--soil); }
+.step-row.s-done  .step-lbl { color: var(--sage); }
+.step-done-lbl { font-size: 10px; color: var(--leaf); font-weight: 600; display: none; }
+.step-row.s-done .step-done-lbl { display: block; }
+
+/* Result */
+.r-result { padding: 22px 22px 36px; animation: fadeSlide .4s ease; }
+
+.triage-banner { border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+.triage-banner.hi { background: rgba(217,112,112,.07); border: 1px solid rgba(217,112,112,.2); }
+.triage-banner.no { background: rgba(122,182,72,.07);  border: 1px solid rgba(122,182,72,.2);  }
+
+.tb-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.tb-priority-lbl {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.triage-banner.hi .tb-priority-lbl { color: var(--red); }
+.triage-banner.no .tb-priority-lbl { color: var(--leaf); }
+.sig-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.sig-badge {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .06em; padding: 2px 8px; border-radius: 4px;
+}
+.sig-badge.hi { background: rgba(217,112,112,.1); color: var(--red); border: 1px solid rgba(217,112,112,.25); }
+.sig-badge.no { background: rgba(122,182,72,.1);  color: var(--leaf);border: 1px solid rgba(122,182,72,.2);  }
+.rec-box {
+  background: rgba(255,255,255,.6); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 13px; max-width: 280px; flex-shrink: 0;
+}
+.rec-lbl { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sage); margin-bottom: 5px; }
+.rec-txt { font-size: 12.5px; color: var(--soil); font-weight: 500; line-height: 1.5; }
+.churn-bar {
+  margin-top: 12px;
+  background: rgba(200,168,75,.08); border: 1px solid rgba(200,168,75,.22);
+  border-radius: 7px; padding: 9px 12px;
+  display: flex; align-items: flex-start; gap: 9px;
+}
+.churn-txt { font-size: 12px; color: #a07828; line-height: 1.55; }
+
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rcard { background: var(--parch); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.rcard.fw { grid-column: 1 / -1; }
+.card-lbl { font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--sage); margin-bottom: 10px; }
+
+/* Sentiment */
+.sent-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.sent-emoji { font-size: 28px; }
+.sent-lbl  { font-size: 16px; font-weight: 600; }
+.sent-score{ font-size: 10.5px; color: var(--muted); }
+.sent-track{ height: 5px; background: rgba(0,0,0,.07); border-radius: 3px; margin-bottom: 14px; overflow: hidden; }
+.sent-fill { height: 100%; border-radius: 3px; }
+.kp-lbl { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+.kp-item { font-size: 12px; color: #4b5563; font-style: italic; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+
+/* History */
+.hist-item { display: flex; align-items: flex-start; gap: 9px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+.hist-item:last-of-type { border-bottom: none; }
+.hist-id   { font-size: 10.5px; font-weight: 600; color: var(--sage); flex-shrink: 0; padding-top: 1px; }
+.hist-subj { font-size: 12px; color: #374151; flex: 1; line-height: 1.45; }
+.hist-st   { font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; }
+.hist-st.op { background: rgba(217,112,112,.1); color: var(--red);  }
+.hist-st.cl { background: rgba(122,182,72,.1);  color: var(--leaf); }
+.hist-pattern {
+  margin-top: 10px; font-size: 12px; color: var(--sage);
+  font-style: italic; line-height: 1.55;
+  border-top: 1px solid rgba(0,0,0,.05); padding-top: 10px;
+}
+.no-hist { font-size: 12.5px; color: var(--muted); font-weight: 300; font-style: italic; }
+
+/* KB */
+.kb-item { padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+.kb-item:last-of-type { border-bottom: none; }
+.kb-title { font-size: 12.5px; font-weight: 500; color: var(--soil); margin-bottom: 3px; }
+.kb-desc  { font-size: 11.5px; color: var(--muted); line-height: 1.55; font-weight: 300; }
+.kb-step  {
+  margin-top: 12px; background: rgba(74,124,69,.07);
+  border: 1px solid rgba(74,124,69,.14); border-radius: 7px; padding: 9px 12px;
+}
+.kb-step-lbl { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sage); margin-bottom: 5px; }
+.kb-step-txt { font-size: 12px; color: var(--soil); line-height: 1.55; }
+
+/* Jira */
+.jira-item { display: flex; align-items: flex-start; gap: 13px; padding: 11px 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+.jira-item:last-of-type { border-bottom: none; }
+.jira-key  {
+  background: rgba(122,176,240,.1); border: 1px solid rgba(122,176,240,.22);
+  border-radius: 5px; padding: 3px 9px;
+  font-size: 11px; font-weight: 600; color: var(--blue); flex-shrink: 0;
+  font-family: 'Courier New', monospace; letter-spacing: .02em;
+}
+.jira-body { flex: 1; }
+.jira-sum  { font-size: 13px; font-weight: 500; color: var(--soil); margin-bottom: 4px; }
+.jira-note { font-size: 12px; color: var(--muted); line-height: 1.6; font-weight: 300; }
+.jira-tags { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
+.jp {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 3px;
+}
+.jp.p1 { background: rgba(217,112,112,.1); color: var(--red);    }
+.jp.p2 { background: rgba(200,168,75,.1);  color: var(--accent); }
+.jp.p3 { background: rgba(0,0,0,.05);      color: var(--muted);  }
+.js-tag{ font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 3px; background: rgba(0,0,0,.05); color: var(--muted); }
+
+/* Error */
+.r-error { height: 100%; display: flex; align-items: center; justify-content: center; padding: 48px; }
+.err-box { background: rgba(217,112,112,.07); border: 1px solid rgba(217,112,112,.2); border-radius: 10px; padding: 22px 30px; text-align: center; }
+.err-title{ font-size: 15px; font-weight: 500; color: var(--red); margin-bottom: 6px; }
+.err-msg  { font-size: 12.5px; color: var(--muted); }
+
+/* Spinner */
+.spinner {
+  width: 14px; height: 14px; display: inline-block;
+  border: 2px solid rgba(245,240,232,.25);
+  border-top-color: var(--cream);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+/* step spinner */
+.s-spinner {
+  width: 12px; height: 12px; display: inline-block;
+  border: 2px solid rgba(74,124,69,.2);
+  border-top-color: var(--sage);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes spin      { to { transform: rotate(360deg); } }
+@keyframes pulse     { 0%,100%{opacity:1;transform:scale(1);}  50%{opacity:.4;transform:scale(.65);} }
+@keyframes fadeSlide { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  body { overflow: auto; }
+  #app  { flex-direction: column; height: auto; overflow: visible; }
+  #left { width: 100%; overflow-y: visible; flex-shrink: 0; }
+  #pscroll { overflow-y: visible; max-height: none; }
+  #right{ min-height: 500px; }
+  .rgrid{ grid-template-columns: 1fr; }
+  .rcard.fw { grid-column: 1; }
+  .tb-top { flex-direction: column; }
+  .rec-box { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+  <div style="display:flex;align-items:baseline">
+    <span class="nav-logo">Ground<span class="g">work</span></span>
+    <span class="nav-product">Assist</span>
+  </div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    <span class="status-label">Live Demo — Powered by Claude</span>
+  </div>
+</nav>
+
+<!-- ── App ── -->
+<div id="app">
+
+  <!-- Left panel -->
+  <div id="left">
+    <!-- Ticket selector -->
+    <div class="lsec">
+      <div class="eyebrow">Sample Tickets</div>
+      <div id="selector"></div>
+    </div>
+    <!-- Preview -->
+    <div id="pscroll"></div>
+    <!-- API key -->
+    <div class="api-wrap">
+      <div class="api-row">
+        <span class="api-label">Anthropic API Key</span>
+        <span class="demo-tag" id="dtag">Demo Mode</span>
+      </div>
+      <input id="apikey" type="password" class="api-input"
+        placeholder="sk-ant-api03-…  (optional)"
+        autocomplete="off" spellcheck="false" />
+      <div class="api-hint">Optional — leave blank for pre-generated demo results. Your key goes directly to Anthropic and is never stored.</div>
+    </div>
+    <!-- Run -->
+    <div class="run-wrap">
+      <button id="run-btn" onclick="runAssist()">▶&nbsp; Run Groundwork Assist</button>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div id="right"></div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ── Palette ref ─────────────────────────────────────── */
+const C = {
+  soil:'#1c2b1a',sage:'#4a7c45',leaf:'#7ab648',
+  accent:'#c8a84b',muted:'#6b7280',red:'#d97070',
+};
+
+/* ── Sample Tickets ──────────────────────────────────── */
+const TICKETS = [
+  {
+    label:'Enterprise SSO Failure',
+    hint:'Churn risk + corporate account + repeat issue',
+    badge:'HIGH',
+    ticket:{
+      subject:'SSO Login Failure — Entire Team Blocked Since Monday',
+      body:`Our entire team has been unable to log in via SSO since Monday morning. This is the third time this has happened in the past month and it is becoming a serious problem for us.
+
+We have tried every step in your help center and nothing has worked. Our IT admin has confirmed there are no issues on our end.
+
+Honestly, at this point we are starting to evaluate alternatives. We need enterprise-grade reliability and this product is not meeting that bar.
+
+Please escalate this immediately.
+
+Marcus Chen
+Head of Operations`,
+      requesterName:'Marcus Chen',requesterEmail:'mchen@apexsolutions.com',
+      orgName:'Apex Solutions',orgTier:'enterprise',submittedBy:'customer',
+    },
+    mockData:{
+      history:[
+        {id:'12301',subject:'SSO login not working for mobile users',status:'Closed',daysAgo:28},
+        {id:'12389',subject:'SSO session expiring too quickly — team locked out',status:'Open',daysAgo:14},
+      ],
+      guruCards:[
+        {title:'SSO Configuration & Troubleshooting Guide',summary:'Diagnose SSO failures including token expiry, IDP misconfigurations, and session timeout issues.'},
+        {title:'Enterprise SSO Reset Procedure',summary:'Full SSO credential reset for enterprise accounts — use when IDP config changes haven\'t resolved the issue.'},
+      ],
+      jiraIssues:[
+        {key:'BUG-4421',summary:'OAuth token expiry not handled correctly on mobile clients',priority:'P1',status:'In Progress'},
+      ],
+    },
+    demo:{
+      triage:{
+        priority:'HIGH',
+        signals:['Corporate Account','Repeat Issue (2×/30d)','Churn Risk Detected'],
+        churn_risk:true,churn_confidence:'high',
+        churn_evidence:'we are starting to evaluate alternatives',
+        recommended_action:'Loop in CSM before replying. Do not close without confirmed resolution — this is the third SSO failure in 30 days.',
+      },
+      internal_note:{
+        summary:'Enterprise customer reports their entire team has been locked out via SSO since Monday morning. This is the third SSO failure in 30 days and previous resolutions have not held. Customer is explicitly considering switching to an alternative vendor.',
+        sentiment:{label:'Frustrated',score:8,key_signals:['third time this has happened','evaluate alternatives','not meeting that bar']},
+        customer_history:{pattern_note:'Recurring SSO failures over 30 days — prior tickets were closed without a durable fix, suggesting a root-cause infrastructure issue.'},
+        troubleshooting:{
+          guru_recommendation:'SSO Configuration & Troubleshooting Guide is most relevant — the token expiry diagnostic section directly matches the open P1 Jira bug BUG-4421.',
+          suggested_first_step:'Check BUG-4421 status with engineering before responding — communicate the fix timeline directly to the customer rather than offering another workaround.',
+        },
+        jira_notes:'BUG-4421 ("OAuth token expiry not handled correctly on mobile clients") is an exact match for the recurring SSO session failures this customer is experiencing. Engineering is actively working on a fix.',
+      },
+    },
+  },
+  {
+    label:'CSV Export — 4th Contact',
+    hint:'Repeat contact (3+ tickets in 30 days)',
+    badge:'HIGH',
+    ticket:{
+      subject:'Still cannot export to CSV — this is my fourth time asking',
+      body:`This is the fourth time I am reaching out about this issue. The CSV export feature has been broken for our account for weeks.
+
+I have followed every single suggestion your team has given me and nothing works. The export spins for a few minutes then times out with no error message.
+
+This is blocking our weekly reporting to leadership. I need this actually fixed today — not another workaround.
+
+Sarah Kim
+Operations Lead, Brightfield Co`,
+      requesterName:'Sarah Kim',requesterEmail:'s.kim@brightfield.co',
+      orgName:'Brightfield Co',orgTier:'pro',submittedBy:'customer',
+    },
+    mockData:{
+      history:[
+        {id:'11890',subject:'CSV export not working',status:'Closed',daysAgo:22},
+        {id:'11945',subject:'CSV export still broken after suggested fix',status:'Closed',daysAgo:15},
+        {id:'12102',subject:'CSV export timeout — large dataset',status:'Closed',daysAgo:8},
+      ],
+      guruCards:[
+        {title:'Data Export Troubleshooting',summary:'Common export failures: 50k row dataset size limit, timeout thresholds, and account-level export permissions.'},
+      ],
+      jiraIssues:[
+        {key:'BUG-4398',summary:'CSV export timing out for datasets over 50,000 rows',priority:'P2',status:'Open'},
+      ],
+    },
+    demo:{
+      triage:{
+        priority:'HIGH',
+        signals:['Repeat Contact (3 tickets/30d)'],
+        churn_risk:false,churn_confidence:null,churn_evidence:null,
+        recommended_action:'Escalate to Tier 2 with full ticket history — prior resolutions were incomplete and this needs engineering review, not another workaround.',
+      },
+      internal_note:{
+        summary:'Customer has been unable to export CSV data for over three weeks. This is her fourth contact on the same issue, with all three previous tickets closed without a durable fix. The export silently times out, blocking her weekly leadership reporting.',
+        sentiment:{label:'Frustrated',score:7,key_signals:['fourth time','nothing works','actually fixed today']},
+        customer_history:{pattern_note:'Same CSV export failure across 4 contacts in 22 days — previous fixes have not held, likely because the root cause (BUG-4398 dataset size limit) was never addressed.'},
+        troubleshooting:{
+          guru_recommendation:'Data Export Troubleshooting — specifically the 50k row size limit. The silent timeout matches BUG-4398 exactly.',
+          suggested_first_step:'Ask how many rows her export contains. If over 50k, confirm BUG-4398 is the root cause and give a realistic engineering timeline instead of another workaround.',
+        },
+        jira_notes:'BUG-4398 ("CSV export timing out for datasets over 50,000 rows") is a near-certain match. The silent timeout with no error message is consistent with the bug\'s known behavior.',
+      },
+    },
+  },
+  {
+    label:'New User — Slack Setup',
+    hint:'First contact, simple question',
+    badge:'NORMAL',
+    ticket:{
+      subject:'How do I connect the Slack integration?',
+      body:`Hi there,
+
+I just signed up yesterday and I am trying to connect the Slack integration but I cannot find where to do it in the settings menu.
+
+Could you point me in the right direction? Thanks so much.
+
+James Park`,
+      requesterName:'James Park',requesterEmail:'james@newco.io',
+      orgName:'NewCo Inc',orgTier:'starter',submittedBy:'customer',
+    },
+    mockData:{
+      history:[],
+      guruCards:[
+        {title:'Slack Integration Setup Guide',summary:'Navigate to Settings → Integrations → Slack, then click Connect and authorize with your Slack workspace admin credentials.'},
+        {title:'Integration Permissions & Scopes',summary:'Required Slack permissions for full functionality: channels:read, chat:write, incoming-webhook.'},
+      ],
+      jiraIssues:[],
+    },
+    demo:{
+      triage:{
+        priority:'NORMAL',
+        signals:[],
+        churn_risk:false,churn_confidence:null,churn_evidence:null,
+        recommended_action:'Reply with the Slack Integration Setup Guide — this is a simple navigation question that can be fully resolved in one response.',
+      },
+      internal_note:{
+        summary:'New customer signed up yesterday and cannot locate the Slack integration in the product settings. First contact, no prior tickets, Starter tier. The question is straightforward with a direct KB answer.',
+        sentiment:{label:'Neutral',score:2,key_signals:['Thanks so much']},
+        customer_history:{pattern_note:null},
+        troubleshooting:{
+          guru_recommendation:'Slack Integration Setup Guide is a direct match — the customer likely missed the navigation path (Settings → Integrations → Slack).',
+          suggested_first_step:'Reply with the exact navigation path and a link to the Setup Guide. One response should fully resolve this.',
+        },
+        jira_notes:null,
+      },
+    },
+  },
+  {
+    label:'Internal Agent Escalation',
+    hint:'Submitted by internal agent on behalf of customer',
+    badge:'HIGH',
+    ticket:{
+      subject:'[ESCALATION] Paramount Media — Account locked after upgrade',
+      body:`Submitting on behalf of Paramount Media (account ID: PM-8821).
+
+The customer upgraded from Pro to Enterprise on Friday and has been completely locked out since. The upgrade appears to have corrupted their admin user permissions — no one on their team can log in.
+
+They have a board presentation tomorrow morning that requires full dashboard access. CSM Jordan T. is already looped in but we need engineering support urgently.
+
+This was escalated to me directly by the customer's VP of Marketing.
+
+— Taylor R., Senior Support Agent`,
+      requesterName:'Taylor R.',requesterEmail:'taylor.r@yourco.com',
+      orgName:'Paramount Media',orgTier:'enterprise',submittedBy:'agent',
+    },
+    mockData:{
+      history:[
+        {id:'12440',subject:'Billing: upgrade confirmation Pro to Enterprise',status:'Closed',daysAgo:3},
+      ],
+      guruCards:[
+        {title:'Account Upgrade Troubleshooting',summary:'Known permission migration issues during tier upgrades, and how to manually reset user roles via admin panel.'},
+        {title:'Enterprise Permissions Reset Procedure',summary:'Step-by-step process for restoring admin access after a failed Pro → Enterprise migration.'},
+      ],
+      jiraIssues:[
+        {key:'BUG-4455',summary:'User permissions not correctly migrated on Pro → Enterprise upgrade',priority:'P1',status:'Open'},
+      ],
+    },
+    demo:{
+      triage:{
+        priority:'HIGH',
+        signals:['Internal Escalation','Corporate Account'],
+        churn_risk:false,churn_confidence:null,churn_evidence:null,
+        recommended_action:'Page engineering on-call immediately — customer has a board presentation in under 24 hours and is fully locked out. CSM Jordan T. is already looped in.',
+      },
+      internal_note:{
+        summary:'Internal agent Taylor R. is escalating on behalf of Paramount Media (Enterprise). Customer upgraded from Pro to Enterprise on Friday and has been completely locked out since — admin permissions appear corrupted by the migration. Hard deadline: board presentation tomorrow morning requiring full dashboard access.',
+        sentiment:{label:'Distressed',score:9,key_signals:['urgently','board presentation tomorrow morning','VP of Marketing escalated directly']},
+        customer_history:{pattern_note:'Only one prior ticket (upgrade billing confirmation, 3 days ago) — this lockout is a direct consequence of that upgrade.'},
+        troubleshooting:{
+          guru_recommendation:'Enterprise Permissions Reset Procedure is the most directly relevant — it covers exactly this scenario: admin access loss after a failed Pro → Enterprise migration.',
+          suggested_first_step:'Run the Enterprise Permissions Reset Procedure immediately. If not resolved within 30 minutes, escalate BUG-4455 to P0 given the board presentation deadline.',
+        },
+        jira_notes:'BUG-4455 ("User permissions not correctly migrated on Pro → Enterprise upgrade") is an exact match. Given the customer\'s board presentation deadline, request an emergency priority bump from P1 to P0.',
+      },
+    },
+  },
+];
+
+/* ── System Prompt ───────────────────────────────────── */
+const SYS = `You are Groundwork Assist, an AI embedded in a customer support platform. Analyze the ticket and context and return ONLY a valid JSON object — no preamble, no markdown fences.
+
+Required structure:
+{
+  "triage": {
+    "priority": "HIGH" or "NORMAL",
+    "signals": ["triggered signal names only — omit untriggered ones"],
+    "churn_risk": true or false,
+    "churn_confidence": "high" or "medium" or "low" or null,
+    "churn_evidence": "exact short quote from ticket proving churn intent, or null",
+    "recommended_action": "one direct sentence for the agent"
+  },
+  "internal_note": {
+    "summary": "2-3 sentences: what the customer is reporting and what they need",
+    "sentiment": {
+      "label": "Positive" or "Neutral" or "Frustrated" or "Angry" or "Distressed",
+      "score": integer 1-10 where 1=very positive 10=very negative,
+      "key_signals": ["up to 3 exact short phrases from the ticket"]
+    },
+    "customer_history": { "pattern_note": "one sentence on the pattern, or null" },
+    "troubleshooting": {
+      "guru_recommendation": "1-2 sentences: which KB card is most relevant and why",
+      "suggested_first_step": "one specific action sentence for the agent"
+    },
+    "jira_notes": "1-2 sentences on how the Jira issue relates, or null if no issues"
+  }
+}
+
+HIGH escalation rules — check all five, any single one triggers HIGH:
+1. 2+ history tickets for same/related issue → signal "Repeat Issue (Xx/30d)"
+2. 3+ total history tickets → signal "Repeat Contact (X tickets/30d)"
+3. ONLY if ticket contains explicit exit language ("evaluating alternatives","canceling","switching providers","leaving") — frustrated tone alone does NOT qualify → signal "Churn Risk Detected"
+4. orgTier is "enterprise" or "vip" → signal "Corporate Account"
+5. submittedBy is "agent" → signal "Internal Escalation"
+
+Be direct and concise. Agents are busy.`;
+
+/* ── State ───────────────────────────────────────────── */
+let sel = 0;
+let busy = false;
+let timers = [];
+
+const STEPS = [
+  {icon:'📋',label:'Reading ticket & requester data'},
+  {icon:'🕐',label:'Scanning 30-day ticket history'},
+  {icon:'📚',label:'Searching Guru knowledge base'},
+  {icon:'🐛',label:'Querying open Jira issues'},
+  {icon:'⚡',label:'Running AI triage analysis'},
+];
+const DELAYS = [0,450,860,1250,1700];
+
+/* ── Util ────────────────────────────────────────────── */
+function h(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const SENT_EMOJI  = {Positive:'😊',Neutral:'😐',Frustrated:'😤',Angry:'😠',Distressed:'😰'};
+const SENT_COLOR  = {Positive:'#7ab648',Neutral:'#6b7280',Frustrated:'#c8a84b',Angry:'#d97070',Distressed:'#b080c0'};
+const BAR_COLOR   = s => s>6?'#d97070':s>4?'#c8a84b':'#7ab648';
+
+/* ── Render helpers ──────────────────────────────────── */
+function renderSelector(){
+  document.getElementById('selector').innerHTML = TICKETS.map((t,i)=>`
+    <div class="tcard${sel===i?' active':''}" onclick="pick(${i})">
+      <div>
+        <div class="tcard-name">${h(t.label)}</div>
+        <div class="tcard-hint">${h(t.hint)}</div>
+      </div>
+      <span class="pbadge ${t.badge==='HIGH'?'hi':'no'}">${t.badge}</span>
+    </div>`).join('');
+}
+
+function renderPreview(){
+  const t = TICKETS[sel];
+  const md = t.mockData;
+  document.getElementById('pscroll').innerHTML = `
+    <div class="eyebrow" style="margin-bottom:11px">Ticket Preview</div>
+    <div class="meta-grid">
+      ${[['Requester',t.ticket.requesterName],['Org',t.ticket.orgName],
+         ['Tier',t.ticket.orgTier[0].toUpperCase()+t.ticket.orgTier.slice(1)],
+         ['Via',t.ticket.submittedBy==='agent'?'Internal agent':'Customer']]
+        .map(([k,v])=>`<div class="meta-item"><div class="meta-k">${k}</div><div class="meta-v">${h(v)}</div></div>`).join('')}
+    </div>
+    <div class="plabel">Subject</div>
+    <div class="psubject">${h(t.ticket.subject)}</div>
+    <div class="plabel">Message</div>
+    <div class="pbody">${h(t.ticket.body)}</div>
+    <div class="ctx-box">
+      <div class="eyebrow" style="margin-bottom:0">Context Being Passed</div>
+      <div class="ctx-chips">
+        <span class="ctx-chip">${md.history.length} prior ticket${md.history.length!==1?'s':''}</span>
+        <span class="ctx-chip">${md.guruCards.length} KB card${md.guruCards.length!==1?'s':''}</span>
+        <span class="ctx-chip">${md.jiraIssues.length} Jira issue${md.jiraIssues.length!==1?'s':''}</span>
+      </div>
+    </div>`;
+}
+
+function renderEmpty(){
+  document.getElementById('right').innerHTML = `
+    <div class="r-empty">
+      <div class="r-empty-icon">⚡</div>
+      <div class="r-empty-title">Ready to analyze</div>
+      <div class="r-empty-sub">Select a sample ticket and click <strong>Run Groundwork Assist</strong> to see live AI triage in action.</div>
+      <div class="feat-chips">
+        ${['Triage decision','Sentiment analysis','KB guidance','Jira linking','Churn detection','Pattern recognition']
+          .map(f=>`<span class="feat-chip">${f}</span>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderLoading(){
+  document.getElementById('right').innerHTML = `
+    <div class="r-loading">
+      <div class="r-loading-title">Groundwork Assist is analyzing</div>
+      <div class="r-loading-sub">Running parallel lookups + AI analysis</div>
+      <div class="step-list">
+        ${STEPS.map((s,i)=>`
+          <div class="step-row" id="sr${i}">
+            <div class="step-circ" id="sc${i}">${h(s.icon)}</div>
+            <span class="step-lbl">${h(s.label)}</span>
+            <span class="step-done-lbl">done</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function activateStep(i){
+  const r=document.getElementById('sr'+i); if(!r)return;
+  r.classList.add('s-active');
+  const c=document.getElementById('sc'+i); if(c)c.innerHTML='<span class="s-spinner"></span>';
+}
+function completeStep(i){
+  const r=document.getElementById('sr'+i); if(!r)return;
+  r.classList.remove('s-active'); r.classList.add('s-done');
+  const c=document.getElementById('sc'+i); if(c)c.textContent='✓';
+}
+function runSteps(){
+  timers.forEach(clearTimeout); timers=[];
+  DELAYS.forEach((d,i)=>timers.push(setTimeout(()=>{
+    activateStep(i); if(i>0)completeStep(i-1);
+  },d)));
+}
+
+function renderResult(r,td){
+  const tr=r.triage, note=r.internal_note;
+  const hi=tr.priority==='HIGH';
+  const bc=hi?'hi':'no';
+  const sbl=s=>`<span class="sig-badge ${hi?'hi':'no'}">${h(s)}</span>`;
+  const sl=note.sentiment?.label||'Neutral';
+  const ss=note.sentiment?.score||5;
+  const hist=td.mockData.history;
+  const guru=td.mockData.guruCards;
+  const jira=td.mockData.jiraIssues;
+
+  document.getElementById('right').innerHTML = `
+  <div class="r-result">
+
+    <div class="triage-banner ${bc}">
+      <div class="tb-top">
+        <div>
+          <div class="tb-priority-lbl">${hi?'🚨 Triage Decision: HIGH PRIORITY':'✅ Triage Decision: Normal Priority'}</div>
+          <div class="sig-badges">
+            ${(tr.signals||[]).map(sbl).join('')}
+            ${(!tr.signals||!tr.signals.length)&&!hi?'<span style="font-size:12px;color:var(--muted);font-style:italic">No escalation signals triggered</span>':''}
+          </div>
+        </div>
+        ${tr.recommended_action?`
+        <div class="rec-box">
+          <div class="rec-lbl">Recommended Action</div>
+          <div class="rec-txt">${h(tr.recommended_action)}</div>
+        </div>`:''}
+      </div>
+      ${tr.churn_risk?`
+      <div class="churn-bar">
+        <span style="font-size:13px;flex-shrink:0">⚠️</span>
+        <div class="churn-txt"><strong>Churn risk (${h(tr.churn_confidence||'detected')} confidence):</strong>${tr.churn_evidence?' "'+h(tr.churn_evidence)+'"':' Explicit exit language detected.'}</div>
+      </div>`:''}
+    </div>
+
+    <div class="rgrid">
+
+      <div class="rcard fw">
+        <div class="card-lbl">🎯 Ticket Summary</div>
+        <div style="font-size:13.5px;color:#374151;line-height:1.8;font-weight:300">${h(note.summary)}</div>
+      </div>
+
+      <div class="rcard">
+        <div class="card-lbl">Sentiment Analysis</div>
+        <div class="sent-top">
+          <span class="sent-emoji">${SENT_EMOJI[sl]||'😐'}</span>
+          <div>
+            <div class="sent-lbl" style="color:${SENT_COLOR[sl]||C.muted}">${h(sl)}</div>
+            <div class="sent-score">Intensity ${ss}/10</div>
+          </div>
+        </div>
+        <div class="sent-track">
+          <div class="sent-fill" style="width:${ss*10}%;background:${BAR_COLOR(ss)}"></div>
+        </div>
+        ${note.sentiment?.key_signals?.length?`
+        <div class="kp-lbl">Key Phrases</div>
+        ${note.sentiment.key_signals.map(s=>`<div class="kp-item">"${h(s)}"</div>`).join('')}`:''}
+      </div>
+
+      <div class="rcard">
+        <div class="card-lbl">📋 30-Day History — ${hist.length} ticket${hist.length!==1?'s':''}</div>
+        ${hist.length===0
+          ?'<div class="no-hist">No previous tickets in the last 30 days.</div>'
+          :hist.map(x=>`
+          <div class="hist-item">
+            <span class="hist-id">#${h(x.id)}</span>
+            <span class="hist-subj">${h(x.subject)}</span>
+            <span class="hist-st ${x.status==='Open'?'op':'cl'}">${h(x.status)}</span>
+          </div>`).join('')}
+        ${note.customer_history?.pattern_note?`<div class="hist-pattern">Pattern: ${h(note.customer_history.pattern_note)}</div>`:''}
+      </div>
+
+      <div class="rcard">
+        <div class="card-lbl">📚 Knowledge Base</div>
+        ${guru.map(c=>`
+          <div class="kb-item">
+            <div class="kb-title">${h(c.title)}</div>
+            <div class="kb-desc">${h(c.summary)}</div>
+          </div>`).join('')}
+        ${note.troubleshooting?.suggested_first_step?`
+        <div class="kb-step">
+          <div class="kb-step-lbl">Suggested First Step</div>
+          <div class="kb-step-txt">${h(note.troubleshooting.suggested_first_step)}</div>
+        </div>`:''}
+      </div>
+
+      ${jira.length?`
+      <div class="rcard fw">
+        <div class="card-lbl">🐛 Jira — Open Related Issues</div>
+        ${jira.map(j=>`
+          <div class="jira-item">
+            <span class="jira-key">${h(j.key)}</span>
+            <div class="jira-body">
+              <div class="jira-sum">${h(j.summary)}</div>
+              ${note.jira_notes?`<div class="jira-note">${h(note.jira_notes)}</div>`:''}
+            </div>
+            <div class="jira-tags">
+              <span class="jp ${j.priority.toLowerCase()}">${h(j.priority)}</span>
+              <span class="js-tag">${h(j.status)}</span>
+            </div>
+          </div>`).join('')}
+      </div>`:''}
+
+    </div>
+  </div>`;
+}
+
+function setBtn(loading){
+  const b=document.getElementById('run-btn');
+  b.disabled=loading;
+  const hasResult=!!document.getElementById('right').querySelector('.r-result');
+  b.innerHTML=loading
+    ?'<span class="spinner"></span> Analyzing\u2026'
+    :(hasResult?'\u21bb\u00a0 Run Again':'\u25b6\u00a0 Run Groundwork Assist');
+}
+
+/* ── Pick ticket ─────────────────────────────────────── */
+function pick(i){
+  sel=i;
+  renderSelector();
+  renderPreview();
+  renderEmpty();
+  setBtn(false);
+}
+
+/* ── Main ────────────────────────────────────────────── */
+async function runAssist(){
+  if(busy)return;
+  busy=true;
+  setBtn(true);
+  renderLoading();
+  runSteps();
+
+  const t=TICKETS[sel];
+  const key=(document.getElementById('apikey').value||'').trim();
+  const t0=Date.now();
+
+  const finish=result=>{
+    const wait=Math.max(0,2900-(Date.now()-t0));
+    setTimeout(()=>{
+      STEPS.forEach((_,i)=>completeStep(i));
+      setTimeout(()=>{ busy=false; renderResult(result,t); setBtn(false); },450);
+    },wait);
+  };
+
+  if(!key){ finish(t.demo); return; }
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-allow-browser':'true',
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system:SYS,
+        messages:[{role:'user',content:JSON.stringify({
+          ticket:t.ticket,
+          history:t.mockData.history,
+          guruCards:t.mockData.guruCards,
+          jiraIssues:t.mockData.jiraIssues,
+        })}],
+      }),
+    });
+    if(!res.ok){console.warn('API',res.status,'=>demo'); finish(t.demo); return;}
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'';
+    const m=raw.match(/\{[\s\S]*\}/);
+    finish(JSON.parse(m?m[0]:raw));
+  }catch(e){
+    console.warn('fetch failed, demo fallback:',e.message);
+    finish(t.demo);
+  }
+}
+
+/* ── API key indicator ───────────────────────────────── */
+document.getElementById('apikey').addEventListener('input',function(){
+  document.getElementById('dtag').style.display=this.value.trim()?'none':'inline-block';
+});
+
+/* ── Init ────────────────────────────────────────────── */
+renderSelector();
+renderPreview();
+renderEmpty();
+</script>
+</body>
+</html>
