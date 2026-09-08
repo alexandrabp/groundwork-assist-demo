@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groundwork Assist — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0f1117; --soil:#1c2b1a; --moss:#2d4a29; --sage:#4a7c45; --leaf:#7ab648;
+  --cream:#f5f0e8; --parch:#ede8dc; --warm:#faf8f4; --accent:#c8a84b; --muted:#6b7280;
+  --red:#cc3340; --blue:#1f73b7; --purple:#6b48c2; --border:#e5e0d5;
+  --zd-navBg:#1f1f1f; --zd-sidebarBg:#2f3941; --zd-bg:#f3f4f6; --zd-border:#d8dcde;
+  --zd-borderSoft:#e9ebed; --zd-text:#2f3941; --zd-subtext:#49545c; --zd-muted:#68737d;
+  --zd-blue:#1f73b7; --zd-blueBg:#e5f0fa; --zd-red:#cc3340; --zd-redBg:#fce8e8;
+  --zd-green:#228f67; --zd-greenBg:#edf8f4; --zd-amber:#f5a623; --zd-amberBg:#fff8e1;
+  --zd-tagBg:#e9ebed; --zd-tagText:#49545c;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Inter','Segoe UI',sans-serif;background:var(--warm);color:var(--ink);overflow:hidden;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:3px;}
+button{font-family:inherit;cursor:pointer;}
+input,select{font-family:inherit;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.45;transform:scale(0.68);}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══════════════ APP SHELL ══════════════ */
+#topbar{
+  height:48px;background:var(--soil);display:flex;align-items:center;padding:0 18px;
+  gap:16px;flex-shrink:0;position:relative;z-index:50;
+}
+.tb-logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;}
+.tb-logo span{color:var(--leaf);}
+.tb-product{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--leaf);
+  border-left:1px solid rgba(255,255,255,0.2);padding-left:10px;margin-left:2px;}
+.tb-tabs{display:flex;gap:2px;margin-left:24px;background:rgba(0,0,0,0.2);padding:3px;border-radius:8px;}
+.tb-tab{padding:7px 16px;font-size:12.5px;font-weight:500;border:none;border-radius:6px;background:transparent;
+  color:rgba(255,255,255,0.5);transition:all 0.15s;}
+.tb-tab.active{background:rgba(255,255,255,0.12);color:#fff;}
+.tb-status{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:var(--leaf);animation:pulse 2.2s ease-in-out infinite;}
+.tb-status-label{font-size:11.5px;color:rgba(255,255,255,0.4);}
+
+#views{height:calc(100vh - 48px);position:relative;overflow:hidden;}
+.view{position:absolute;inset:0;overflow-y:auto;display:none;}
+.view.active{display:block;}
+
+/* ══════════════════════════════════════════════════════════════
+   VIEW 1 — ZENDESK TICKET
+   ══════════════════════════════════════════════════════════════ */
+#zd-app{height:100%;display:flex;flex-direction:column;background:var(--zd-bg);font-size:13px;color:var(--zd-text);}
+
+.zd-nav{height:46px;background:var(--zd-navBg);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.zd-nav-logo{display:flex;align-items:center;gap:7px;margin-right:6px;}
+.zd-nav-brand{color:#fff;font-size:12.5px;font-weight:600;}
+.zd-search{flex:1;max-width:360px;background:rgba(255,255,255,0.1);border-radius:4px;padding:5px 11px;
+  display:flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,0.1);}
+.zd-search span{color:rgba(255,255,255,0.35);font-size:11.5px;}
+.zd-avatar{width:26px;height:26px;border-radius:50%;background:var(--zd-blue);display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:10px;font-weight:600;margin-left:auto;}
+
+.zd-body{flex:1;display:flex;overflow:hidden;}
+.zd-rail{width:46px;background:var(--zd-sidebarBg);display:flex;flex-direction:column;align-items:center;
+  padding:10px 0;gap:4px;flex-shrink:0;}
+.zd-rail-item{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;}
+.zd-rail-item.active{background:rgba(255,255,255,0.12);}
+
+.zd-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+.zd-controlbar{
+  background:#fffbea;border-bottom:1px solid #f0d878;padding:9px 20px;display:flex;align-items:center;gap:12px;
+  flex-shrink:0;flex-wrap:wrap;
+}
+.zd-cb-label{font-size:11.5px;font-weight:600;color:#8a6200;}
+.zd-cb-select{padding:5px 9px;border:1px solid #e0c060;border-radius:5px;font-size:12px;background:#fff;color:var(--zd-text);}
+.zd-cb-btn{padding:6px 16px;background:var(--soil);color:#fff;border:none;border-radius:5px;font-size:12px;
+  font-weight:500;display:flex;align-items:center;gap:7px;}
+.zd-cb-btn:disabled{background:var(--moss);cursor:not-allowed;}
+.zd-cb-key{padding:5px 9px;border:1px solid #e0c060;border-radius:5px;font-size:11.5px;width:190px;background:#fff;}
+.zd-cb-hint{font-size:10.5px;color:#a08030;margin-left:auto;}
+.zd-spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;
+  display:inline-block;animation:spin 0.7s linear infinite;}
+
+.zd-header{background:#fff;border-bottom:1px solid var(--zd-border);padding:12px 20px 0;flex-shrink:0;}
+.zd-breadcrumb{font-size:11px;color:var(--zd-muted);margin-bottom:8px;display:flex;gap:5px;align-items:center;}
+.zd-breadcrumb .cur{color:var(--zd-blue);}
+.zd-title-row{margin-bottom:10px;}
+#zd-title{font-size:16px;font-weight:600;margin-bottom:7px;line-height:1.3;}
+.zd-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.zd-badge{font-size:11px;font-weight:500;padding:2px 9px;border-radius:100px;}
+.zd-badge-open{background:var(--zd-blueBg);color:var(--zd-blue);border:1px solid #bedcf3;}
+.zd-auto-tag{font-size:8.5px;background:rgba(204,51,64,0.15);border-radius:3px;padding:1px 4px;margin-left:2px;font-weight:700;}
+.zd-meta-text{font-size:11.5px;color:var(--zd-muted);}
+.zd-tabs{display:flex;border-top:1px solid var(--zd-borderSoft);margin:10px -20px 0;padding-left:20px;}
+.zd-tab{padding:8px 15px;font-size:12.5px;color:var(--zd-muted);border-bottom:2px solid transparent;}
+.zd-tab.active{color:var(--zd-blue);border-bottom-color:var(--zd-blue);font-weight:500;}
+
+.zd-content{flex:1;display:flex;overflow:hidden;}
+.zd-thread{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0;}
+
+.zd-msg{display:flex;gap:11px;align-items:flex-start;}
+.zd-msg-avatar{width:30px;height:30px;border-radius:50%;background:#6b7280;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;color:#fff;font-size:11px;font-weight:600;margin-top:1px;}
+.zd-msg-body{flex:1;min-width:0;}
+.zd-msg-meta{display:flex;align-items:baseline;gap:7px;margin-bottom:5px;flex-wrap:wrap;}
+.zd-msg-sender{font-weight:600;font-size:12.5px;}
+.zd-msg-time{font-size:10.5px;color:var(--zd-muted);}
+.zd-msg-tag{font-size:9.5px;padding:1px 6px;border-radius:3px;background:var(--zd-tagBg);color:var(--zd-tagText);}
+.zd-msg-content{background:#fff;border:1px solid var(--zd-border);border-radius:0 8px 8px 8px;padding:13px 15px;
+  line-height:1.7;color:var(--zd-subtext);font-size:12.5px;}
+.zd-msg-content p{margin-bottom:9px;}
+.zd-msg-content p:last-child{margin-bottom:0;}
+
+.zd-note-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1c2b1a,#4a7c45);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+  box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(122,182,72,0.4);}
+.zd-note-avatar span{color:var(--leaf);font-size:10px;font-weight:700;}
+.zd-note-tag-internal{background:var(--zd-amberBg);color:#8a6200;border:1px solid #f0c040;}
+.zd-note-tag-ai{background:rgba(122,182,72,0.1);color:#3a6b20;border:1px solid rgba(122,182,72,0.25);}
+.zd-note-body{background:var(--zd-amberBg);border:1px solid #f0c040;border-left:4px solid var(--zd-amber);
+  border-radius:0 8px 8px 8px;padding:16px 18px;}
+
+.zd-triage{border-radius:7px;padding:12px 14px;margin-bottom:13px;}
+.zd-triage.hi{background:rgba(204,51,64,0.06);border:1px solid rgba(204,51,64,0.18);}
+.zd-triage.no{background:rgba(34,143,103,0.06);border:1px solid rgba(34,143,103,0.18);}
+.zd-triage-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.zd-triage.hi .zd-triage-label{color:var(--zd-red);}
+.zd-triage.no .zd-triage-label{color:var(--zd-green);}
+.zd-sig{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(204,51,64,0.1);
+  color:var(--zd-red);border:1px solid rgba(204,51,64,0.22);display:inline-block;margin:0 5px 5px 0;}
+.zd-churn{display:flex;gap:7px;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);
+  border-radius:5px;padding:8px 10px;margin-bottom:8px;font-size:11.5px;color:#7a5000;line-height:1.5;}
+.zd-action{font-size:11.5px;color:var(--zd-subtext);}
+
+.zd-section{margin-bottom:13px;}
+.zd-section-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;}
+.zd-section-body{padding-left:18px;font-size:12.5px;color:var(--zd-subtext);line-height:1.7;}
+.zd-hist-row{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.zd-hist-link{color:var(--zd-blue);font-weight:600;text-decoration:none;min-width:52px;}
+.zd-hist-subj{flex:1;color:var(--zd-text);}
+.zd-hist-status{font-size:9.5px;font-weight:600;padding:1px 6px;border-radius:3px;}
+.zd-kb-row{padding:5px 0;}
+.zd-kb-tag{font-size:9px;font-weight:600;padding:1px 5px;border-radius:2px;margin-right:6px;}
+.zd-kb-tag.guru{background:#f0e6ff;color:#6b48c2;}
+.zd-kb-tag.guide{background:#e5f0fa;color:var(--zd-blue);}
+.zd-kb-link{color:var(--zd-blue);font-weight:600;text-decoration:none;font-size:12px;}
+.zd-jira-key{background:#e5f0fa;border:1px solid #bedcf3;border-radius:3px;padding:2px 7px;font-size:10.5px;
+  font-weight:600;font-family:monospace;color:var(--zd-blue);text-decoration:none;}
+.zd-fb-row{margin-top:14px;padding-top:11px;border-top:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;gap:9px;}
+.zd-fb-btn{font-size:11.5px;text-decoration:none;border-radius:4px;padding:3px 11px;font-weight:500;border:none;}
+.zd-fb-up{color:var(--zd-green);background:var(--zd-greenBg);border:1px solid #aadbc8;}
+.zd-fb-down{color:var(--zd-red);background:var(--zd-redBg);border:1px solid #f0b8b8;}
+.zd-fb-thanks{font-size:11.5px;color:var(--zd-green);font-weight:500;}
+.zd-fb-form{margin-top:14px;padding-top:11px;border-top:1px solid rgba(0,0,0,0.08);}
+.zd-fb-form-label{font-size:11.5px;font-weight:500;color:var(--zd-subtext);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.zd-fb-textarea{width:100%;min-height:64px;padding:8px 10px;border:1px solid var(--zd-border);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:12px;color:var(--zd-text);resize:vertical;outline:none;background:#fff;}
+.zd-fb-textarea:focus{border-color:var(--zd-red);}
+.zd-fb-form-actions{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.zd-fb-form-btn{font-size:11.5px;padding:5px 13px;border-radius:5px;font-weight:500;border:none;}
+.zd-fb-form-btn.submit{background:var(--zd-red);color:#fff;}
+.zd-fb-form-btn.submit:disabled{background:#e5b8b8;cursor:not-allowed;}
+.zd-fb-form-btn.cancel{background:var(--zd-tagBg);color:var(--zd-subtext);}
+.zd-fb-form-hint{font-size:10.5px;color:var(--zd-muted);margin-left:auto;}
+
+.zd-note-loading{background:var(--zd-amberBg);border:1px dashed #e0c060;border-radius:0 8px 8px 8px;padding:24px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;}
+.zd-step-list{width:100%;max-width:320px;}
+.zd-step{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:11.5px;color:#a08030;opacity:0.4;transition:opacity 0.3s;}
+.zd-step.active,.zd-step.done{opacity:1;}
+.zd-step-dot{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:9px;flex-shrink:0;border:1.5px solid #e0c060;}
+.zd-step.done .zd-step-dot{background:var(--leaf);border-color:var(--leaf);color:#fff;font-weight:700;}
+
+.zd-reply{background:#fff;border:1px solid var(--zd-border);border-radius:8px;overflow:hidden;flex-shrink:0;}
+.zd-reply-tabs{display:flex;border-bottom:1px solid var(--zd-borderSoft);}
+.zd-reply-tab{padding:9px 15px;font-size:12px;color:var(--zd-muted);}
+.zd-reply-tab.active{color:var(--zd-blue);font-weight:500;border-bottom:2px solid var(--zd-blue);}
+.zd-reply-box{padding:11px 15px;min-height:56px;color:var(--zd-muted);font-size:12.5px;font-style:italic;}
+.zd-reply-actions{padding:9px 15px;border-top:1px solid var(--zd-borderSoft);display:flex;justify-content:flex-end;gap:7px;}
+.zd-reply-btn{padding:6px 14px;border:none;border-radius:4px;font-size:12px;}
+.zd-reply-btn.secondary{background:var(--zd-tagBg);color:var(--zd-subtext);}
+.zd-reply-btn.primary{background:var(--zd-blue);color:#fff;font-weight:500;}
+
+.zd-props{width:220px;flex-shrink:0;border-left:1px solid var(--zd-border);background:#fff;overflow-y:auto;padding:14px;}
+.zd-prop{margin-bottom:13px;}
+.zd-prop-label{font-size:10.5px;font-weight:600;color:var(--zd-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.zd-prop-val{font-size:12px;padding:6px 8px;border:1px solid var(--zd-border);border-radius:4px;display:flex;
+  align-items:center;justify-content:space-between;}
+.zd-prop-val.auto{position:relative;}
+.zd-prop-req{display:flex;align-items:center;gap:7px;}
+.zd-prop-req-av{width:26px;height:26px;border-radius:50%;background:#6b7280;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:10px;font-weight:600;flex-shrink:0;}
+.zd-prop-req-name{font-size:12px;font-weight:500;color:var(--zd-blue);}
+.zd-prop-req-email{font-size:10.5px;color:var(--zd-muted);}
+.zd-tag-chip{font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px;background:var(--zd-tagBg);
+  color:var(--zd-tagText);display:inline-flex;align-items:center;gap:4px;margin:0 4px 4px 0;}
+.zd-tag-auto{font-size:7.5px;background:rgba(0,0,0,0.12);border-radius:2px;padding:0 3px;font-weight:700;}
+.zd-assist-panel{background:linear-gradient(135deg,rgba(28,43,26,0.97),rgba(45,74,41,0.97));border-radius:7px;
+  padding:12px 13px;margin-top:6px;}
+.zd-ap-head{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.zd-ap-title{font-size:10.5px;font-weight:600;color:var(--leaf);letter-spacing:0.05em;}
+.zd-ap-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.zd-ap-key{font-size:10.5px;color:rgba(255,255,255,0.4);}
+.zd-ap-val{font-size:10.5px;font-weight:500;}
+.zd-ap-foot{margin-top:9px;font-size:9.5px;color:rgba(255,255,255,0.25);}
+
+/* ══════════════════════════════════════════════════════════════
+   VIEW 2 — ADMIN DASHBOARD
+   ══════════════════════════════════════════════════════════════ */
+#dash-app{height:100%;display:flex;background:var(--warm);}
+.dash-sidebar{width:200px;flex-shrink:0;background:var(--soil);padding:18px 12px;display:flex;flex-direction:column;}
+.dash-logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;padding:4px 8px 6px;}
+.dash-logo span{color:var(--leaf);}
+.dash-logo-sub{font-size:9.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);
+  padding:0 8px 16px;}
+.dash-nav-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:6px;font-size:12.5px;
+  color:rgba(255,255,255,0.5);margin-bottom:2px;border:none;background:transparent;text-align:left;width:100%;}
+.dash-nav-item.active{background:rgba(255,255,255,0.09);color:#fff;font-weight:500;}
+.dash-main{flex:1;padding:24px 30px;overflow-y:auto;min-width:0;}
+.dash-page{display:none;}
+.dash-page.active{display:block;animation:fadeSlide 0.3s ease;}
+.dash-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.dash-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--soil);letter-spacing:-0.5px;}
+.dash-sub{font-size:12.5px;color:var(--muted);margin-top:3px;}
+.dash-range{display:flex;gap:4px;background:var(--parch);padding:3px;border-radius:8px;}
+.dash-range span{padding:6px 13px;font-size:12px;border-radius:6px;color:var(--muted);}
+.dash-range span.active{background:#fff;color:var(--soil);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+
+.dash-card{background:#fff;border:1px solid var(--border);border-radius:11px;padding:18px;}
+.dash-stats{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.dash-stat{flex:1;min-width:150px;}
+.dash-stat-label{font-size:10.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.dash-stat-value{font-family:'Playfair Display',serif;font-size:25px;font-weight:700;color:var(--soil);
+  letter-spacing:-0.5px;margin-bottom:4px;}
+.dash-stat-sub{font-size:11px;color:var(--muted);}
+.dash-panels{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px;}
+.dash-panel-label{font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.mini-chart{display:flex;align-items:flex-end;gap:3px;height:110px;}
+.mini-bar{flex:1;background:linear-gradient(to top,var(--sage),var(--leaf));border-radius:2px 2px 0 0;opacity:0.85;
+  transition:opacity 0.15s;}
+.mini-bar:hover{opacity:1;}
+.conn-row{display:flex;align-items:center;gap:9px;padding:7px 2px;border-bottom:1px solid #f1f0ea;}
+.conn-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.conn-name{font-size:12px;font-weight:500;color:var(--soil);flex:1;}
+.conn-badge{font-size:9px;font-weight:600;padding:2px 8px;border-radius:100px;flex-shrink:0;}
+.dash-signal-row{display:flex;align-items:center;gap:10px;padding:7px 0;}
+.dash-signal-bar-bg{flex:1;height:8px;background:#f1f0ea;border-radius:4px;overflow:hidden;}
+.dash-signal-bar{height:100%;background:var(--sage);border-radius:4px;}
+.dash-signal-label{font-size:11.5px;color:var(--soil);width:150px;flex-shrink:0;}
+.dash-signal-count{font-size:11px;color:var(--muted);width:32px;text-align:right;flex-shrink:0;}
+
+.dash-conn-card{display:flex;align-items:center;gap:14px;padding:15px 18px;margin-bottom:9px;flex-wrap:wrap;}
+.dash-conn-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dash-conn-info{flex:1;min-width:180px;}
+.dash-conn-name{font-size:13.5px;font-weight:600;color:var(--soil);display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap;}
+.dash-conn-status{font-size:11px;}
+.dash-toggle{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0;}
+.dash-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.dash-toggle-track{position:absolute;inset:0;background:#d1d5db;border-radius:100px;transition:background 0.15s;}
+.dash-toggle input:checked + .dash-toggle-track{background:var(--leaf);}
+.dash-toggle-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:left 0.15s;}
+.dash-toggle input:checked ~ .dash-toggle-track .dash-toggle-thumb{left:16px;}
+.dash-test-btn{font-size:11.5px;padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--muted);}
+.dash-add-btn{padding:10px 18px;background:var(--soil);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;}
+
+.dash-fb-filters{display:flex;gap:4px;background:var(--parch);padding:3px;border-radius:8px;}
+.dash-fb-filter{padding:6px 14px;font-size:12px;font-weight:500;border:none;border-radius:6px;background:transparent;color:var(--muted);}
+.dash-fb-filter.active{background:#fff;color:var(--soil);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.dash-fb-card{display:flex;gap:13px;align-items:flex-start;padding:13px 17px;margin-bottom:8px;}
+.dash-fb-emoji{font-size:19px;flex-shrink:0;}
+.dash-fb-ticket{font-size:12px;font-weight:600;color:var(--blue);}
+.dash-fb-time{font-size:10.5px;color:var(--muted);margin-left:auto;}
+.dash-fb-summary{font-size:12.5px;color:#374151;line-height:1.55;margin-top:4px;}
+.dash-fb-comment{font-size:12px;color:#8a6200;background:#fff8e1;border:1px solid #f0d878;border-left:3px solid var(--accent);
+  border-radius:0 5px 5px 0;padding:7px 10px;margin-top:7px;line-height:1.55;}
+.dash-fb-comment-label{font-size:9.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:3px;}
+
+.dash-table{width:100%;border-collapse:collapse;}
+.dash-table th{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:9px 14px;background:var(--parch);}
+.dash-table td{font-size:12px;padding:10px 14px;border-bottom:1px solid var(--border);}
+.dash-status-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px;}
+
+.dash-setting-row{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 0;border-bottom:1px solid var(--border);}
+.dash-setting-row:last-child{border-bottom:none;}
+.dash-setting-label{font-size:13px;font-weight:600;color:var(--soil);margin-bottom:3px;}
+.dash-setting-hint{font-size:11px;color:var(--muted);line-height:1.5;}
+.dash-setting-input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;min-width:140px;}
+
+.badge{font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+
+/* ══════════════════════════════════════════════════════════════
+   VIEW 3 — LIVE CHAT
+   ══════════════════════════════════════════════════════════════ */
+#chat-app{height:100%;display:flex;flex-direction:column;background:var(--zd-bg);font-size:13px;color:var(--zd-text);}
+.chat-controlbar{background:#fffbea;border-bottom:1px solid #f0d878;padding:9px 20px;display:flex;align-items:center;
+  gap:12px;flex-shrink:0;flex-wrap:wrap;}
+.chat-body{flex:1;display:flex;overflow:hidden;}
+
+.chat-transcript-col{flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;}
+.chat-transcript-header{padding:14px 20px;border-bottom:1px solid var(--zd-border);flex-shrink:0;}
+.chat-customer-name{font-size:15px;font-weight:600;color:var(--zd-text);}
+.chat-customer-meta{font-size:11.5px;color:var(--zd-muted);margin-top:2px;}
+.chat-live-dot{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--zd-green);
+  background:var(--zd-greenBg);border:1px solid #aadbc8;padding:2px 9px;border-radius:100px;margin-left:8px;}
+.chat-live-dot .dot{width:6px;height:6px;border-radius:50%;background:var(--zd-green);animation:pulse 1.4s ease-in-out infinite;}
+
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;}
+.chat-bubble-row{display:flex;flex-direction:column;max-width:70%;animation:fadeSlide 0.3s ease;}
+.chat-bubble-row.customer{align-self:flex-start;align-items:flex-start;}
+.chat-bubble-row.agent{align-self:flex-end;align-items:flex-end;}
+.chat-bubble{padding:9px 13px;border-radius:14px;font-size:12.5px;line-height:1.55;}
+.chat-bubble-row.customer .chat-bubble{background:#f1f2f4;color:var(--zd-text);border-bottom-left-radius:3px;}
+.chat-bubble-row.agent .chat-bubble{background:var(--zd-blue);color:#fff;border-bottom-right-radius:3px;}
+.chat-bubble-time{font-size:9.5px;color:var(--zd-muted);margin-top:3px;padding:0 4px;}
+.chat-typing{display:flex;gap:4px;align-self:flex-start;padding:9px 13px;background:#f1f2f4;border-radius:14px;
+  border-bottom-left-radius:3px;}
+.chat-typing span{width:6px;height:6px;border-radius:50%;background:#9ca3af;animation:typingDot 1.2s infinite;}
+.chat-typing span:nth-child(2){animation-delay:0.2s;}
+.chat-typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes typingDot{0%,60%,100%{opacity:0.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-3px);}}
+
+.chat-input-bar{padding:11px 20px;border-top:1px solid var(--zd-border);flex-shrink:0;display:flex;gap:8px;}
+.chat-input-fake{flex:1;padding:9px 13px;border:1px solid var(--zd-border);border-radius:20px;color:var(--zd-muted);
+  font-size:12.5px;font-style:italic;background:#fafbfc;}
+
+/* Live analysis sidebar */
+.chat-panel{width:320px;flex-shrink:0;border-left:1px solid var(--zd-border);background:#fff;overflow-y:auto;
+  display:flex;flex-direction:column;transition:box-shadow 0.4s ease;}
+.chat-panel.flash-high{animation:flashHigh 1.6s ease;}
+@keyframes flashHigh{
+  0%{box-shadow:inset 0 0 0 0 rgba(204,51,64,0);}
+  15%{box-shadow:inset 0 0 0 3px rgba(204,51,64,0.5);}
+  100%{box-shadow:inset 0 0 0 0 rgba(204,51,64,0);}
+}
+.chat-panel-header{padding:13px 16px;border-bottom:1px solid var(--zd-borderSoft);display:flex;align-items:center;
+  gap:8px;flex-shrink:0;position:sticky;top:0;background:#fff;z-index:2;}
+.chat-panel-header-icon{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#1c2b1a,#4a7c45);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chat-panel-title{font-size:12.5px;font-weight:700;color:var(--zd-text);}
+.chat-panel-updated{font-size:10px;color:var(--zd-muted);margin-left:auto;white-space:nowrap;}
+.chat-panel-body{padding:14px 16px;flex:1;}
+
+.chat-empty-state{padding:30px 20px;text-align:center;color:var(--zd-muted);}
+.chat-empty-icon{font-size:26px;margin-bottom:10px;}
+.chat-empty-text{font-size:12px;line-height:1.6;}
+
+.chat-cust-box{display:flex;align-items:center;gap:9px;padding-bottom:13px;margin-bottom:13px;
+  border-bottom:1px solid var(--zd-borderSoft);}
+.chat-cust-avatar{width:32px;height:32px;border-radius:50%;background:#6b7280;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0;}
+.chat-cust-name{font-size:12.5px;font-weight:600;color:var(--zd-text);}
+.chat-cust-org{font-size:11px;color:var(--zd-muted);}
+
+.chat-trigger-note{font-size:10px;color:var(--zd-muted);background:#f7f8f9;border:1px solid var(--zd-borderSoft);
+  border-radius:5px;padding:6px 9px;margin-bottom:13px;display:flex;align-items:center;gap:6px;}
+
+.sent-trend{display:flex;align-items:center;gap:5px;margin-bottom:13px;flex-wrap:wrap;}
+.sent-trend-chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px;display:flex;align-items:center;gap:3px;}
+.sent-trend-arrow{color:var(--zd-muted);font-size:11px;}
+.sent-trend-chip.current{box-shadow:0 0 0 2px rgba(0,0,0,0.06);}
+
+.chat-analyzing{display:flex;align-items:center;gap:9px;padding:16px;color:var(--zd-muted);font-size:12px;}
+.chat-analyzing-spinner{width:14px;height:14px;border:2px solid rgba(74,124,69,0.2);border-top-color:var(--sage);
+  border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
+
+@media (max-width: 1050px){ .chat-panel{width:270px;} }
+@media (max-width: 900px){ .chat-panel{display:none;} }
+
+
+@media (max-width: 900px){
+  .zd-props{display:none;}
+  .dash-panels{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div style="display:flex;align-items:baseline;">
+    <span class="tb-logo">Ground<span>work</span></span>
+  </div>
+  <span class="tb-product">Assist</span>
+  <div class="tb-tabs">
+    <button class="tb-tab active" id="tab-zd" onclick="switchView('zd')">🎫 Zendesk Ticket</button>
+    <button class="tb-tab" id="tab-chat" onclick="switchView('chat')">💬 Live Chat</button>
+    <button class="tb-tab" id="tab-dash" onclick="switchView('dash')">📊 Admin Dashboard</button>
+  </div>
+  <div class="tb-status">
+    <div class="tb-dot"></div>
+    <span class="tb-status-label">Live Demo</span>
+  </div>
+</div>
+
+<div id="views">
+
+  <div class="view active" id="view-zd">
+    <div id="zd-app">
+
+      <div class="zd-nav">
+        <div class="zd-nav-logo">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4" fill="#03363d"/><path d="M16 7C11.03 7 7 11.03 7 16s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 14.5a5.5 5.5 0 110-11 5.5 5.5 0 010 11z" fill="#fff"/></svg>
+          <span class="zd-nav-brand">Support</span>
+        </div>
+        <div class="zd-search"><span>🔍 Search tickets, users, organizations…</span></div>
+        <div class="zd-avatar">JD</div>
+      </div>
+
+      <div class="zd-body">
+        <div class="zd-rail">
+          <div class="zd-rail-item">🏠</div>
+          <div class="zd-rail-item active">🎫</div>
+          <div class="zd-rail-item">📊</div>
+          <div class="zd-rail-item">👥</div>
+          <div class="zd-rail-item">⚙️</div>
+        </div>
+
+        <div class="zd-main">
+
+          <div class="zd-controlbar">
+            <span class="zd-cb-label">⚡ Demo Controls</span>
+            <select class="zd-cb-select" id="ticket-select" onchange="selectTicket(this.value)"></select>
+            <button class="zd-cb-btn" id="run-btn" onclick="runAssist()">▶ Simulate New Ticket</button>
+            <input class="zd-cb-key" id="apikey" type="password" placeholder="Anthropic API key (optional)">
+            <span class="zd-cb-hint">Blank = pre-generated demo result</span>
+          </div>
+
+          <div class="zd-header">
+            <div class="zd-breadcrumb"><span>Views</span><span>›</span><span>All open tickets</span><span>›</span><span class="cur" id="zd-crumb">#67890</span></div>
+            <div class="zd-title-row">
+              <div id="zd-title">SSO Login Failure — Entire Team Blocked Since Monday</div>
+              <div class="zd-badges">
+                <span class="zd-badge zd-badge-open">Open</span>
+                <span class="zd-badge" id="zd-priority-badge" style="background:#eef2f6;color:#68737d;">Pending Analysis</span>
+                <span class="zd-meta-text" id="zd-meta-text">Ticket #67890 · Apex Solutions · Created just now</span>
+              </div>
+            </div>
+            <div class="zd-tabs">
+              <div class="zd-tab active">Conversation</div>
+              <div class="zd-tab">Events (3)</div>
+            </div>
+          </div>
+
+          <div class="zd-content">
+            <div class="zd-thread" id="zd-thread"></div>
+            <div class="zd-props" id="zd-props"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-chat">
+    <div id="chat-app">
+
+      <div class="chat-controlbar">
+        <span class="zd-cb-label">⚡ Demo Controls</span>
+        <button class="zd-cb-btn" id="chat-play-btn" onclick="startChatSim()">▶ Start Chat Simulation</button>
+        <button class="zd-cb-btn" id="chat-reset-btn" onclick="resetChatSim()" style="background:var(--zd-tagBg);color:var(--zd-subtext);">↻ Reset</button>
+        <input class="zd-cb-key" id="chat-apikey" type="password" placeholder="Anthropic API key (optional)">
+        <span class="zd-cb-hint">Analysis re-runs every 3 customer messages, on a churn keyword match, or after 45s idle</span>
+      </div>
+
+      <div class="chat-body">
+        <div class="chat-transcript-col">
+          <div class="chat-transcript-header">
+            <span class="chat-customer-name">Priya Nandakumar</span>
+            <span class="chat-live-dot" id="chat-live-indicator" style="display:none;"><span class="dot"></span>LIVE</span>
+            <div class="chat-customer-meta">Fenwick Logistics · Pro tier · Chat started just now</div>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div style="text-align:center;color:var(--zd-muted);font-size:12px;padding:40px 20px;">
+              Click <strong>Start Chat Simulation</strong> to watch a live conversation stream in, with the analysis panel updating in real time on the right.
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <div class="chat-input-fake">Type a reply…</div>
+          </div>
+        </div>
+
+        <div class="chat-panel" id="chat-panel">
+          <div class="chat-panel-header">
+            <div class="chat-panel-header-icon"><span style="color:var(--leaf);font-size:9px;font-weight:700;">GA</span></div>
+            <span class="chat-panel-title">Live Analysis</span>
+            <span class="chat-panel-updated" id="chat-updated-label">Not started</span>
+          </div>
+          <div class="chat-panel-body" id="chat-panel-body">
+            <div class="chat-empty-state">
+              <div class="chat-empty-icon">💬</div>
+              <div class="chat-empty-text">Groundwork Assist will analyze this conversation as it unfolds — no waiting for the chat to end.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="view" id="view-dash">
+    <div id="dash-app">
+      <div class="dash-sidebar">
+        <div class="dash-logo">Ground<span>work</span></div>
+        <div class="dash-logo-sub">Assist</div>
+        <button class="dash-nav-item active" data-page="overview" onclick="switchDashPage('overview')">📊 Overview</button>
+        <button class="dash-nav-item" data-page="connectors" onclick="switchDashPage('connectors')">🔌 Connectors</button>
+        <button class="dash-nav-item" data-page="feedback" onclick="switchDashPage('feedback')">💬 Feedback</button>
+        <button class="dash-nav-item" data-page="activity" onclick="switchDashPage('activity')">🕐 Activity</button>
+        <button class="dash-nav-item" data-page="settings" onclick="switchDashPage('settings')">⚙️ Settings</button>
+        <div style="margin-top:auto;padding:14px 10px 4px;border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--leaf);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--soil);">A</div>
+            <div><div style="font-size:12px;color:#fff;font-weight:500;">Alex</div><div style="font-size:10.5px;color:rgba(255,255,255,0.35);">admin</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-main">
+
+        <div class="dash-page active" id="dash-overview">
+          <div class="dash-header">
+            <div><div class="dash-title">Overview</div><div class="dash-sub">Adoption, performance, and quality across every processed ticket.</div></div>
+            <div class="dash-range"><span>7d</span><span class="active">30d</span><span>90d</span></div>
+          </div>
+          <div class="dash-stats">
+            <div class="dash-card dash-stat"><div class="dash-stat-label">Tickets Processed</div><div class="dash-stat-value">1,284</div><div class="dash-stat-sub">97.1% success rate</div></div>
+            <div class="dash-card dash-stat"><div class="dash-stat-label">Avg Processing</div><div class="dash-stat-value">4.2s</div><div class="dash-stat-sub">p95: 8.9s</div></div>
+            <div class="dash-card dash-stat"><div class="dash-stat-label">High Priority</div><div class="dash-stat-value" style="color:var(--red);">312</div><div class="dash-stat-sub">24% of total</div></div>
+            <div class="dash-card dash-stat"><div class="dash-stat-label">Feedback Approval</div><div class="dash-stat-value" style="color:var(--leaf);">91.6%</div><div class="dash-stat-sub">450 ratings</div></div>
+          </div>
+          <div class="dash-panels">
+            <div class="dash-card">
+              <div class="dash-panel-label">Ticket Volume — 30 Days</div>
+              <div class="mini-chart" id="mini-chart"></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-panel-label">Connector Health &nbsp;·&nbsp; <span style="color:var(--leaf);text-transform:none;font-weight:500;">4/5 healthy</span></div>
+              <div id="conn-health-list"></div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-panel-label">Escalation Signal Frequency</div>
+            <div id="signal-freq-list"></div>
+          </div>
+        </div>
+
+        <div class="dash-page" id="dash-connectors">
+          <div class="dash-header">
+            <div><div class="dash-title">Connectors</div><div class="dash-sub">Add or rotate API integrations without a redeploy.</div></div>
+            <button class="dash-add-btn">+ Add Connector</button>
+          </div>
+          <div id="connectors-list"></div>
+        </div>
+
+        <div class="dash-page" id="dash-feedback">
+          <div class="dash-header">
+            <div><div class="dash-title">Feedback</div><div class="dash-sub">Ratings agents leave directly from the Zendesk internal note.</div></div>
+            <div class="dash-fb-filters" id="fb-filters">
+              <button class="dash-fb-filter active" data-f="all" onclick="filterFeedback('all')">All</button>
+              <button class="dash-fb-filter" data-f="up" onclick="filterFeedback('up')">👍 Helpful</button>
+              <button class="dash-fb-filter" data-f="down" onclick="filterFeedback('down')">👎 Not helpful</button>
+            </div>
+          </div>
+          <div id="feedback-list"></div>
+        </div>
+
+        <div class="dash-page" id="dash-activity">
+          <div class="dash-header"><div><div class="dash-title">Activity</div><div class="dash-sub">Every processed ticket, including failures.</div></div></div>
+          <div class="dash-card" style="padding:0;overflow:hidden;">
+            <table class="dash-table">
+              <thead><tr><th>Ticket</th><th>Status</th><th>Summary</th><th>Priority</th><th>Latency</th><th>Time</th></tr></thead>
+              <tbody id="activity-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dash-page" id="dash-settings">
+          <div class="dash-header"><div><div class="dash-title">Settings</div><div class="dash-sub">Tune triage behavior without a redeploy.</div></div></div>
+          <div class="dash-card" style="max-width:580px;" id="settings-list"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+function switchView(v) {
+  document.getElementById('view-zd').classList.toggle('active', v === 'zd');
+  document.getElementById('view-chat').classList.toggle('active', v === 'chat');
+  document.getElementById('view-dash').classList.toggle('active', v === 'dash');
+  document.getElementById('tab-zd').classList.toggle('active', v === 'zd');
+  document.getElementById('tab-chat').classList.toggle('active', v === 'chat');
+  document.getElementById('tab-dash').classList.toggle('active', v === 'dash');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ZENDESK VIEW LOGIC
+   ═══════════════════════════════════════════════════════ */
+const TICKETS = [
+  {
+    id: 67890, label: 'Enterprise SSO Failure',
+    subject: 'SSO Login Failure — Entire Team Blocked Since Monday',
+    bodyParas: [
+      'Our entire team has been unable to log in via SSO since Monday morning. This is the third time this has happened in the past month and it is becoming a serious problem for us.',
+      'We have tried every step in your help center and nothing has worked. Our IT admin has confirmed there are no issues on our end.',
+      'Honestly, at this point <strong>we are starting to evaluate alternatives.</strong> We need enterprise-grade reliability and this product is not meeting that bar.',
+      'Please escalate this immediately.'
+    ],
+    signoff: 'Marcus Chen<br>Head of Operations',
+    requesterName: 'Marcus Chen', requesterInitials: 'MC', requesterEmail: 'mchen@apexsolutions.com',
+    org: 'Apex Solutions', ticket: { orgTier: 'enterprise', submittedBy: 'customer' },
+    history: [
+      { id: '12301', subject: 'SSO login not working for mobile users', status: 'Closed' },
+      { id: '12389', subject: 'SSO session expiring too quickly — team locked out', status: 'Open' },
+    ],
+    guruCards: [{ title: 'SSO Configuration & Troubleshooting Guide' }, { title: 'Enterprise SSO Reset Procedure' }],
+    helpArticles: [{ title: 'How to Reset SSO Settings' }],
+    jiraIssues: [{ key: 'BUG-4421', summary: 'OAuth token expiry not handled correctly on mobile clients', priority: 'P1', status: 'In Progress' }],
+    demo: {
+      triage: { priority: 'HIGH', signals: ['Corporate Account', 'Repeat Issue (2×/30d)', 'Churn Risk Detected'], churn_risk: true, churn_confidence: 'high', churn_evidence: 'we are starting to evaluate alternatives', recommended_action: 'Loop in CSM before replying. Do not close without confirmed resolution — third SSO failure in 30 days.' },
+      note: { summary: 'Enterprise customer reports their entire team has been locked out via SSO since Monday morning. This is the third SSO failure in 30 days — previous fixes have not held. Customer is explicitly evaluating alternative vendors.', sentiment: { label: 'Frustrated', score: 8, phrases: ['third time this has happened', 'evaluate alternatives', 'not meeting that bar'] }, pattern: 'Recurring SSO failures over 30 days — prior tickets closed without a durable fix.' }
+    }
+  },
+  {
+    id: 68804, label: 'New User — Slack Setup',
+    subject: 'How do I connect the Slack integration?',
+    bodyParas: ['Hi there,', 'I just signed up yesterday and I am trying to connect the Slack integration but I cannot find where to do it in the settings menu.', 'Could you point me in the right direction? Thanks so much.'],
+    signoff: 'James Park',
+    requesterName: 'James Park', requesterInitials: 'JP', requesterEmail: 'james@newco.io',
+    org: 'NewCo Inc', ticket: { orgTier: 'starter', submittedBy: 'customer' },
+    history: [],
+    guruCards: [{ title: 'Slack Integration Setup Guide' }],
+    helpArticles: [{ title: 'Integration Permissions & Scopes' }],
+    jiraIssues: [],
+    demo: {
+      triage: { priority: 'NORMAL', signals: [], churn_risk: false, recommended_action: 'Reply with the Slack Integration Setup Guide — a simple navigation question, resolvable in one response.' },
+      note: { summary: 'New customer signed up yesterday and cannot locate the Slack integration in settings. First contact, no prior tickets, Starter tier.', sentiment: { label: 'Neutral', score: 2, phrases: ['Thanks so much'] }, pattern: null }
+    }
+  },
+  {
+    id: 68779, label: 'Internal Agent Escalation',
+    subject: '[ESCALATION] Paramount Media — Account locked after upgrade',
+    bodyParas: ['Submitting on behalf of Paramount Media (account ID: PM-8821).', 'The customer upgraded from Pro to Enterprise on Friday and has been completely locked out since. The upgrade appears to have corrupted their admin user permissions.', 'They have a board presentation tomorrow morning that requires full dashboard access. CSM Jordan T. is already looped in but we need engineering support urgently.'],
+    signoff: '— Taylor R., Senior Support Agent',
+    requesterName: 'Taylor R.', requesterInitials: 'TR', requesterEmail: 'taylor.r@yourco.com',
+    org: 'Paramount Media', ticket: { orgTier: 'enterprise', submittedBy: 'agent' },
+    history: [{ id: '12440', subject: 'Billing: upgrade confirmation Pro to Enterprise', status: 'Closed' }],
+    guruCards: [{ title: 'Enterprise Permissions Reset Procedure' }],
+    helpArticles: [],
+    jiraIssues: [{ key: 'BUG-4455', summary: 'User permissions not correctly migrated on Pro → Enterprise upgrade', priority: 'P1', status: 'Open' }],
+    demo: {
+      triage: { priority: 'HIGH', signals: ['Internal Escalation', 'Corporate Account'], churn_risk: false, recommended_action: 'Page engineering on-call immediately — board presentation in under 24 hours, customer fully locked out.' },
+      note: { summary: 'Internal agent escalating on behalf of Paramount Media (Enterprise). Locked out since Friday\'s upgrade — admin permissions appear corrupted. Hard deadline: board presentation tomorrow.', sentiment: { label: 'Distressed', score: 9, phrases: ['urgently', 'board presentation tomorrow morning'] }, pattern: 'Only one prior ticket (upgrade billing, 3 days ago) — lockout is a direct consequence.' }
+    }
+  },
+];
+
+let selectedIdx = 0;
+let zdBusy = false;
+
+const sel = document.getElementById('ticket-select');
+TICKETS.forEach((t, i) => {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = t.label;
+  sel.appendChild(o);
+});
+
+function selectTicket(idx) {
+  selectedIdx = parseInt(idx);
+  renderCustomerMessage();
+}
+function h(s) { return s == null ? '' : String(s); }
+
+function renderCustomerMessage() {
+  const t = TICKETS[selectedIdx];
+  document.getElementById('zd-crumb').textContent = '#' + t.id;
+  document.getElementById('zd-title').textContent = t.subject;
+  document.getElementById('zd-meta-text').textContent = `Ticket #${t.id} · ${t.org} · Created just now`;
+  const pb = document.getElementById('zd-priority-badge');
+  pb.textContent = 'Pending Analysis';
+  pb.style.background = '#eef2f6'; pb.style.color = '#68737d';
+
+  document.getElementById('zd-thread').innerHTML = `
+    <div class="zd-msg">
+      <div class="zd-msg-avatar">${t.requesterInitials}</div>
+      <div class="zd-msg-body">
+        <div class="zd-msg-meta">
+          <span class="zd-msg-sender">${h(t.requesterName)}</span>
+          <span class="zd-msg-time">Today, just now</span>
+          <span class="zd-msg-tag">Customer</span>
+        </div>
+        <div class="zd-msg-content">
+          ${t.bodyParas.map(p => `<p>${p}</p>`).join('')}
+          <p style="margin-top:10px;color:var(--zd-muted);">${t.signoff}</p>
+        </div>
+      </div>
+    </div>
+    <div id="note-slot"></div>
+    <div class="zd-reply">
+      <div class="zd-reply-tabs"><div class="zd-reply-tab active">Public reply</div><div class="zd-reply-tab">Internal note</div></div>
+      <div class="zd-reply-box">Type your reply here…</div>
+      <div class="zd-reply-actions"><button class="zd-reply-btn secondary">Save</button><button class="zd-reply-btn primary">Submit as Open ▾</button></div>
+    </div>
+  `;
+  renderPropsSidebar(null);
+}
+
+function renderPropsSidebar(triage) {
+  const t = TICKETS[selectedIdx];
+  const priorityHtml = triage
+    ? (triage.priority === 'HIGH'
+        ? `<div class="zd-prop-val auto" style="border-color:rgba(204,51,64,0.4);background:#fce8e8;color:var(--zd-red);font-weight:600;"><span>⚡ Urgent</span><span class="zd-auto-tag">AUTO</span></div>`
+        : `<div class="zd-prop-val auto" style="border-color:rgba(34,143,103,0.4);background:#edf8f4;color:var(--zd-green);font-weight:600;"><span>Normal</span><span class="zd-auto-tag" style="background:rgba(34,143,103,0.15);">AUTO</span></div>`)
+    : `<select class="zd-prop-val" style="width:100%;"><option>—</option></select>`;
+
+  const groupHtml = triage
+    ? (triage.priority === 'HIGH'
+        ? `<div class="zd-prop-val auto" style="border-color:rgba(122,182,72,0.35);background:rgba(122,182,72,0.07);color:#3a6b20;font-weight:500;"><span>Escalation Queue</span><span class="zd-auto-tag" style="background:rgba(122,182,72,0.15);color:#3a6b20;">AUTO</span></div>`
+        : `<div class="zd-prop-val">Support Queue</div>`)
+    : `<div class="zd-prop-val" style="color:var(--zd-muted);">—</div>`;
+
+  const tagsHtml = triage
+    ? `<div>
+        <span class="zd-tag-chip">pd-triaged<span class="zd-tag-auto">A</span></span>
+        ${triage.churn_risk ? `<span class="zd-tag-chip" style="background:#fce8e8;color:var(--zd-red);">churn-risk<span class="zd-tag-auto" style="background:rgba(204,51,64,0.15);">A</span></span>` : ''}
+        ${t.ticket.submittedBy === 'agent' ? `<span class="zd-tag-chip" style="background:#e5f0fa;color:var(--zd-blue);">internal-escalation<span class="zd-tag-auto" style="background:rgba(31,115,183,0.15);">A</span></span>` : ''}
+      </div>`
+    : `<div style="font-size:11.5px;color:var(--zd-muted);">No tags yet</div>`;
+
+  const assistPanel = triage ? `
+    <div class="zd-assist-panel">
+      <div class="zd-ap-head">
+        <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#1c2b1a,#4a7c45);display:flex;align-items:center;justify-content:center;"><span style="color:var(--leaf);font-size:7px;font-weight:700;">GA</span></div>
+        <span class="zd-ap-title">Groundwork Assist</span>
+      </div>
+      <div class="zd-ap-row"><span class="zd-ap-key">Triage</span><span class="zd-ap-val" style="color:${triage.priority === 'HIGH' ? '#f08080' : '#7ab648'};">${triage.priority}</span></div>
+      <div class="zd-ap-row"><span class="zd-ap-key">History</span><span class="zd-ap-val" style="color:rgba(255,255,255,0.5);">${t.history.length} tickets / 30d</span></div>
+      <div class="zd-ap-row"><span class="zd-ap-key">Churn risk</span><span class="zd-ap-val" style="color:${triage.churn_risk ? '#f08080' : 'rgba(255,255,255,0.5)'};">${triage.churn_risk ? 'Detected ⚠️' : 'None'}</span></div>
+      <div class="zd-ap-foot">Auto-analyzed 2s after ticket creation</div>
+    </div>` : '';
+
+  document.getElementById('zd-props').innerHTML = `
+    <div class="zd-prop">
+      <div class="zd-prop-label">Requester</div>
+      <div class="zd-prop-req">
+        <div class="zd-prop-req-av">${t.requesterInitials}</div>
+        <div><div class="zd-prop-req-name">${h(t.requesterName)}</div><div class="zd-prop-req-email">${h(t.requesterEmail)}</div></div>
+      </div>
+    </div>
+    <div class="zd-prop"><div class="zd-prop-label">Organization</div><div style="font-size:12.5px;color:var(--zd-blue);font-weight:500;">${h(t.org)}</div><div style="font-size:11px;color:var(--zd-muted);margin-top:2px;text-transform:capitalize;">${t.ticket.orgTier}</div></div>
+    <div style="border-top:1px solid var(--zd-borderSoft);margin:12px 0;"></div>
+    <div class="zd-prop"><div class="zd-prop-label">Status</div><select class="zd-prop-val" style="width:100%;"><option>Open</option></select></div>
+    <div class="zd-prop"><div class="zd-prop-label">Priority</div>${priorityHtml}</div>
+    <div class="zd-prop"><div class="zd-prop-label">Group</div>${groupHtml}</div>
+    <div style="border-top:1px solid var(--zd-borderSoft);margin:12px 0;"></div>
+    <div class="zd-prop"><div class="zd-prop-label">Tags</div>${tagsHtml}</div>
+    <div style="border-top:1px solid var(--zd-borderSoft);margin:12px 0;"></div>
+    ${assistPanel}
+  `;
+}
+
+const STEPS = ['Reading ticket & requester data', 'Scanning 30-day ticket history', 'Searching Guru + Help Center', 'Querying open Jira issues', 'Running AI triage analysis'];
+const DELAYS = [0, 400, 800, 1200, 1650];
+
+function renderLoadingNote() {
+  document.getElementById('note-slot').innerHTML = `
+    <div class="zd-msg">
+      <div class="zd-note-avatar"><span>GA</span></div>
+      <div class="zd-msg-body">
+        <div class="zd-msg-meta"><span class="zd-msg-sender">Groundwork Assist</span><span class="zd-msg-time">analyzing…</span></div>
+        <div class="zd-note-loading">
+          <div class="zd-step-list">
+            ${STEPS.map((s, i) => `<div class="zd-step" id="zstep${i}"><div class="zd-step-dot" id="zdot${i}"></div>${s}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+function activateZStep(i) { const r = document.getElementById('zstep' + i); if (r) r.classList.add('active'); }
+function completeZStep(i) { const r = document.getElementById('zstep' + i); const d = document.getElementById('zdot' + i); if (r) { r.classList.remove('active'); r.classList.add('done'); } if (d) d.textContent = '✓'; }
+
+function renderNote(triage, note, t) {
+  window.__lastFeedbackTicket = t;
+  const isHigh = triage.priority === 'HIGH';
+  const sigHtml = (triage.signals || []).map(s => `<span class="zd-sig">${s}</span>`).join('');
+  const churnHtml = triage.churn_risk ? `<div class="zd-churn">⚠️ <div><strong>Churn risk (${triage.churn_confidence || 'detected'} confidence):</strong> ${triage.churn_evidence ? `"${triage.churn_evidence}"` : 'Explicit exit language detected.'}</div></div>` : '';
+
+  const histHtml = t.history.length === 0
+    ? `<div style="font-size:11.5px;color:var(--zd-muted);font-style:italic;">No previous tickets in the last 30 days.</div>`
+    : t.history.map(x => `<div class="zd-hist-row"><a href="#" class="zd-hist-link">#${x.id} ↗</a><span class="zd-hist-subj">${x.subject}</span><span class="zd-hist-status" style="background:${x.status === 'Open' ? '#fce8e8' : '#edf8f4'};color:${x.status === 'Open' ? 'var(--zd-red)' : 'var(--zd-green)'};">${x.status}</span></div>`).join('');
+
+  const kbHtml = [
+    ...t.guruCards.map(c => `<div class="zd-kb-row"><span class="zd-kb-tag guru">GURU</span><a href="#" class="zd-kb-link">${c.title} ↗</a></div>`),
+    ...t.helpArticles.map(c => `<div class="zd-kb-row"><span class="zd-kb-tag guide">GUIDE</span><a href="#" class="zd-kb-link">${c.title} ↗</a></div>`)
+  ].join('');
+
+  const jiraHtml = t.jiraIssues.map(j => `
+    <div style="display:flex;align-items:flex-start;gap:9px;">
+      <a href="#" class="zd-jira-key">${j.key} ↗</a>
+      <div style="flex:1;">
+        <div style="font-size:12.5px;font-weight:500;color:var(--zd-text);margin-bottom:3px;">${j.summary}</div>
+        <span class="badge" style="background:${j.priority === 'P1' ? '#fce8e8' : '#fff8e1'};color:${j.priority === 'P1' ? 'var(--zd-red)' : 'var(--accent)'};">${j.priority}</span>
+        <span class="badge" style="background:var(--zd-tagBg);color:var(--zd-tagText);">${j.status}</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('note-slot').innerHTML = `
+    <div class="zd-msg">
+      <div class="zd-note-avatar"><span>GA</span></div>
+      <div class="zd-msg-body">
+        <div class="zd-msg-meta">
+          <span class="zd-msg-sender">Groundwork Assist</span>
+          <span class="zd-msg-time">just now · 4.1s to analyze</span>
+          <span class="zd-msg-tag zd-note-tag-internal">Internal note</span>
+          <span class="zd-msg-tag zd-note-tag-ai">AI-generated</span>
+        </div>
+        <div class="zd-note-body">
+          <div class="zd-triage ${isHigh ? 'hi' : 'no'}">
+            <div class="zd-triage-label">${isHigh ? '🚨 Triage: HIGH PRIORITY — Escalation Queue' : '✅ Triage: Normal Priority'}</div>
+            <div>${sigHtml || '<span style="font-size:11.5px;color:var(--zd-muted);font-style:italic;">No escalation signals triggered</span>'}</div>
+            ${churnHtml}
+            <div class="zd-action"><strong>Action:</strong> ${note.recommendedAction || triage.recommended_action}</div>
+          </div>
+
+          <div class="zd-section"><div class="zd-section-label" style="color:var(--sage);">🎯 Ticket Summary</div><div class="zd-section-body">${note.summary}</div></div>
+
+          <div class="zd-section" style="background:#fff9f0;border:1px solid #f0d080;border-radius:5px;padding:10px 12px;">
+            <div class="zd-section-label" style="color:#b8882b;margin-bottom:5px;">${note.sentiment.label === 'Frustrated' ? '😤' : note.sentiment.label === 'Distressed' ? '😰' : note.sentiment.label === 'Neutral' ? '😐' : '😊'} Sentiment: <span style="color:var(--accent);">${note.sentiment.label}</span> · ${note.sentiment.score}/10</div>
+            <div style="font-size:11.5px;color:var(--zd-subtext);padding-left:18px;">${(note.sentiment.phrases || []).map(p => `<em>"${p}"</em>`).join(' &nbsp;·&nbsp; ')}</div>
+          </div>
+
+          <div class="zd-section"><div class="zd-section-label" style="color:var(--purple);">📋 Customer History — ${t.history.length} ticket${t.history.length !== 1 ? 's' : ''} (30 days)</div><div class="zd-section-body">${histHtml}${note.pattern ? `<div style="margin-top:6px;font-style:italic;color:var(--purple);font-size:11.5px;">Pattern: ${note.pattern}</div>` : ''}</div></div>
+
+          ${(t.guruCards.length || t.helpArticles.length) ? `<div class="zd-section"><div class="zd-section-label" style="color:#228f67;">📚 Knowledge Base</div><div class="zd-section-body">${kbHtml}</div></div>` : ''}
+
+          ${t.jiraIssues.length ? `<div class="zd-section" style="margin-bottom:0;"><div class="zd-section-label" style="color:var(--zd-blue);">🐛 Jira — Open Related Issues</div><div class="zd-section-body">${jiraHtml}</div></div>` : ''}
+
+          <div class="zd-fb-row" id="fb-row">
+            <span style="font-size:11px;color:#94a3b8;">Was this analysis helpful?</span>
+            <button class="zd-fb-btn zd-fb-up" onclick="giveFeedback('up')">👍 Yes</button>
+            <button class="zd-fb-btn zd-fb-down" onclick="showDownForm()">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const pb = document.getElementById('zd-priority-badge');
+  if (isHigh) { pb.textContent = '⚡ Urgent'; pb.style.background = '#fce8e8'; pb.style.color = 'var(--zd-red)'; pb.style.fontWeight = '600'; }
+  else { pb.textContent = 'Normal'; pb.style.background = '#edf8f4'; pb.style.color = 'var(--zd-green)'; pb.style.fontWeight = '600'; }
+
+  renderPropsSidebar(triage);
+}
+
+function giveFeedback(rating) {
+  document.getElementById('fb-row').innerHTML = `<span class="zd-fb-thanks">👍 Thanks for the feedback — this trains the dashboard's approval metric.</span>`;
+  pushDashboardFeedback('up', null);
+}
+
+function showDownForm() {
+  document.getElementById('fb-row').outerHTML = `
+    <div class="zd-fb-form" id="fb-row">
+      <div class="zd-fb-form-label">👎 Sorry this missed the mark — what was wrong?</div>
+      <textarea class="zd-fb-textarea" id="fb-comment" placeholder="e.g. Missed the actual escalation reason, KB article wasn't relevant, sentiment read wrong…" oninput="toggleSubmitBtn()"></textarea>
+      <div class="zd-fb-form-actions">
+        <button class="zd-fb-form-btn submit" id="fb-submit-btn" disabled onclick="submitDownFeedback()">Submit Feedback</button>
+        <button class="zd-fb-form-btn cancel" onclick="cancelDownForm()">Cancel</button>
+        <span class="zd-fb-form-hint">Visible to your team in the admin dashboard</span>
+      </div>
+    </div>`;
+  document.getElementById('fb-comment').focus();
+}
+
+function toggleSubmitBtn() {
+  const val = document.getElementById('fb-comment').value.trim();
+  document.getElementById('fb-submit-btn').disabled = val.length === 0;
+}
+
+function cancelDownForm() {
+  document.getElementById('fb-row').outerHTML = `
+    <div class="zd-fb-row" id="fb-row">
+      <span style="font-size:11px;color:#94a3b8;">Was this analysis helpful?</span>
+      <button class="zd-fb-btn zd-fb-up" onclick="giveFeedback('up')">👍 Yes</button>
+      <button class="zd-fb-btn zd-fb-down" onclick="showDownForm()">👎 No</button>
+    </div>`;
+}
+
+function submitDownFeedback() {
+  const comment = document.getElementById('fb-comment').value.trim();
+  if (!comment) return;
+  document.getElementById('fb-row').outerHTML = `<div class="zd-fb-form" id="fb-row"><span class="zd-fb-thanks">👎 Thanks — this was logged for review, along with your note.</span></div>`;
+  pushDashboardFeedback('down', comment);
+}
+
+function pushDashboardFeedback(rating, comment) {
+  const t = window.__lastFeedbackTicket;
+  if (!t) return;
+  FEEDBACK.unshift({
+    rating, id: t.id, priority: t.demo.triage.priority,
+    summary: t.demo.note.summary,
+    time: 'just now', comment,
+  });
+  // Refresh the dashboard feedback list live if it's currently rendered
+  const active = document.querySelector('.dash-fb-filter.active');
+  if (active) renderFeedback(active.dataset.f);
+}
+
+let zdTimers = [];
+async function runAssist() {
+  if (zdBusy) return;
+  zdBusy = true;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="zd-spinner"></span> Analyzing…';
+
+  renderLoadingNote();
+  zdTimers.forEach(clearTimeout); zdTimers = [];
+  DELAYS.forEach((d, i) => zdTimers.push(setTimeout(() => { activateZStep(i); if (i > 0) completeZStep(i - 1); }, d)));
+
+  const t = TICKETS[selectedIdx];
+  const key = (document.getElementById('apikey').value || '').trim();
+  const t0 = Date.now();
+
+  const finish = (result) => {
+    const wait = Math.max(0, 2600 - (Date.now() - t0));
+    setTimeout(() => {
+      [0,1,2,3,4].forEach(completeZStep);
+      setTimeout(() => {
+        renderNote(result.triage, result.note, t);
+        btn.disabled = false; btn.innerHTML = '▶ Simulate New Ticket';
+        zdBusy = false;
+      }, 400);
+    }, wait);
+  };
+
+  if (!key) { finish(t.demo); return; }
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-allow-browser': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 900,
+        system: 'You are Groundwork Assist. Return ONLY JSON matching: {"triage":{"priority":"HIGH|NORMAL","signals":[],"churn_risk":true|false,"churn_confidence":"high|medium|low|null","churn_evidence":"string|null","recommended_action":"string"},"note":{"summary":"string","sentiment":{"label":"Positive|Neutral|Frustrated|Angry|Distressed","score":1,"phrases":["..."]},"pattern":"string|null"}}',
+        messages: [{ role: 'user', content: JSON.stringify({ subject: t.subject, body: t.bodyParas.join(' ').replace(/<[^>]+>/g, ''), org: t.org, orgTier: t.ticket.orgTier, submittedBy: t.ticket.submittedBy, history: t.history }) }]
+      })
+    });
+    if (!res.ok) { finish(t.demo); return; }
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const m = raw.match(/\{[\s\S]*\}/);
+    finish(JSON.parse(m ? m[0] : raw));
+  } catch (e) { finish(t.demo); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD VIEW LOGIC
+   ═══════════════════════════════════════════════════════ */
+function switchDashPage(page) {
+  document.querySelectorAll('.dash-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('dash-' + page).classList.add('active');
+  document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+}
+
+const CONN_SCHEMAS = {
+  zendesk: { label: 'Zendesk', color: '#1f73b7' }, guru: { label: 'Guru', color: '#6b48c2' },
+  jira: { label: 'Jira', color: '#0052cc' }, slack: { label: 'Slack', color: '#611f69' }, anthropic: { label: 'Anthropic', color: '#c8a84b' },
+};
+const CONNECTORS = [
+  { type: 'zendesk', name: 'Production Zendesk', enabled: true, detail: 'acmesupport.zendesk.com', error: null, verified: '2m ago' },
+  { type: 'anthropic', name: 'Claude', enabled: true, detail: 'claude-sonnet-4-6', error: null, verified: '2m ago' },
+  { type: 'guru', name: 'Support KB', enabled: true, detail: 'api.getguru.com', error: null, verified: '6m ago' },
+  { type: 'jira', name: 'Engineering', enabled: true, detail: 'acme.atlassian.net', error: null, verified: '22m ago' },
+  { type: 'slack', name: '#escalations-live', enabled: true, detail: 'hooks.slack.com', error: 'Rate limited — retrying', verified: '1d ago' },
+];
+
+function renderMiniChart() {
+  const vals = [38,52,44,61,48,70,55,63,40,58,75,66,80,59,71,85,64,90,77,95];
+  document.getElementById('mini-chart').innerHTML = vals.map(v => `<div class="mini-bar" style="height:${v}%;" title="${v} tickets"></div>`).join('');
+}
+function renderConnHealth() {
+  document.getElementById('conn-health-list').innerHTML = CONNECTORS.map(c => `
+    <div class="conn-row">
+      <span class="conn-dot" style="background:${c.error ? 'var(--red)' : 'var(--leaf)'};"></span>
+      <span class="conn-name">${c.name}</span>
+      <span class="conn-badge" style="background:${CONN_SCHEMAS[c.type].color}18;color:${CONN_SCHEMAS[c.type].color};">${CONN_SCHEMAS[c.type].label}</span>
+    </div>`).join('');
+}
+const SIGNALS = [
+  { name: 'Corporate Account', count: 198, max: 198 }, { name: 'Repeat Issue (2×/30d)', count: 142, max: 198 },
+  { name: 'Internal Escalation', count: 87, max: 198 }, { name: 'Churn Risk Detected', count: 41, max: 198 },
+  { name: 'Repeat Contact (3+/30d)', count: 34, max: 198 },
+];
+function renderSignalFreq() {
+  document.getElementById('signal-freq-list').innerHTML = SIGNALS.map(s => `
+    <div class="dash-signal-row">
+      <span class="dash-signal-label">${s.name}</span>
+      <div class="dash-signal-bar-bg"><div class="dash-signal-bar" style="width:${(s.count / s.max) * 100}%;"></div></div>
+      <span class="dash-signal-count">${s.count}</span>
+    </div>`).join('');
+}
+function renderConnectorsPage() {
+  document.getElementById('connectors-list').innerHTML = CONNECTORS.map((c) => `
+    <div class="dash-card dash-conn-card">
+      <div class="dash-conn-icon" style="background:${CONN_SCHEMAS[c.type].color}18;border:1px solid ${CONN_SCHEMAS[c.type].color}40;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${c.error ? 'var(--red)' : 'var(--leaf)'};display:inline-block;"></span>
+      </div>
+      <div class="dash-conn-info">
+        <div class="dash-conn-name">${c.name} <span class="badge" style="background:${CONN_SCHEMAS[c.type].color}18;color:${CONN_SCHEMAS[c.type].color};">${CONN_SCHEMAS[c.type].label}</span></div>
+        <div class="dash-conn-status" style="color:${c.error ? 'var(--red)' : 'var(--muted)'};">${c.error ? '⚠ ' + c.error : 'Verified ' + c.verified}</div>
+      </div>
+      <span style="font-size:11.5px;color:var(--muted);font-family:monospace;">${c.detail}</span>
+      <button class="dash-test-btn">Test</button>
+      <label class="dash-toggle"><input type="checkbox" ${c.enabled ? 'checked' : ''}><span class="dash-toggle-track"><span class="dash-toggle-thumb"></span></span></label>
+    </div>`).join('');
+}
+
+const FEEDBACK = [
+  { rating: 'up', id: 68821, priority: 'HIGH', summary: 'Enterprise customer locked out via SSO — third occurrence in 30 days, explicit churn language detected.', time: '12m ago' },
+  { rating: 'up', id: 68804, priority: 'NORMAL', summary: 'New user asking how to connect the Slack integration.', time: '47m ago' },
+  { rating: 'down', id: 68791, priority: 'NORMAL', summary: 'Billing question about a duplicate charge — triage missed the finance escalation signal.', time: '2h ago' },
+  { rating: 'up', id: 68779, priority: 'HIGH', summary: 'Internal agent escalating on behalf of Paramount Media — admin lockout after upgrade.', time: '3h ago' },
+  { rating: 'up', id: 68755, priority: 'HIGH', summary: 'CSV export failure — fourth contact in 22 days, matched to BUG-4398.', time: '5h ago' },
+  { rating: 'down', id: 68740, priority: 'NORMAL', summary: 'Sentiment misread as Neutral when customer was clearly frustrated about onboarding delays.', time: '7h ago' },
+];
+function renderFeedback(filter) {
+  const list = filter === 'all' ? FEEDBACK : FEEDBACK.filter(f => f.rating === filter);
+  document.getElementById('feedback-list').innerHTML = list.map(f => `
+    <div class="dash-card dash-fb-card">
+      <div class="dash-fb-emoji">${f.rating === 'up' ? '👍' : '👎'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="dash-fb-ticket">#${f.id}</span>
+          <span class="badge" style="background:${f.priority === 'HIGH' ? '#fce8e8' : '#edf8f4'};color:${f.priority === 'HIGH' ? 'var(--red)' : 'var(--leaf)'};">${f.priority}</span>
+          <span class="dash-fb-time">${f.time}</span>
+        </div>
+        <div class="dash-fb-summary">${h(f.summary)}</div>
+        ${f.comment ? `<div class="dash-fb-comment"><div class="dash-fb-comment-label">Agent Comment</div>"${h(f.comment)}"</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+function filterFeedback(f) {
+  document.querySelectorAll('.dash-fb-filter').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+  renderFeedback(f);
+}
+
+const ACTIVITY = [
+  { id: 68830, status: 'success', priority: 'HIGH', summary: 'SSO lockout, third occurrence, churn language present.', latency: '4.2s', time: '2m ago' },
+  { id: 68829, status: 'success', priority: 'NORMAL', summary: 'Question about API rate limits on the Growth plan.', latency: '3.3s', time: '8m ago' },
+  { id: 68828, status: 'failed', priority: null, summary: 'Anthropic API timeout after 3 retries', latency: '—', time: '16m ago' },
+  { id: 68827, status: 'success', priority: 'HIGH', summary: 'Internal escalation — VP-level customer, board deadline.', latency: '5.1s', time: '24m ago' },
+  { id: 68826, status: 'partial', priority: 'NORMAL', summary: 'Guru connector timed out; note posted without KB links.', latency: '6.9s', time: '32m ago' },
+];
+function renderActivity() {
+  const statusStyle = { success: { c: 'var(--leaf)', bg: '#edf8f4', l: 'Success' }, partial: { c: 'var(--accent)', bg: '#fff8e1', l: 'Partial' }, failed: { c: 'var(--red)', bg: '#fce8e8', l: 'Failed' } };
+  document.getElementById('activity-tbody').innerHTML = ACTIVITY.map(a => { const s = statusStyle[a.status]; return `
+    <tr>
+      <td style="color:var(--blue);font-weight:600;">#${a.id}</td>
+      <td><span class="dash-status-badge" style="background:${s.bg};color:${s.c};">${s.l}</span></td>
+      <td>${a.summary}</td>
+      <td>${a.priority ? `<span class="badge" style="background:${a.priority === 'HIGH' ? '#fce8e8' : '#edf8f4'};color:${a.priority === 'HIGH' ? 'var(--red)' : 'var(--leaf)'};">${a.priority}</span>` : '<span style="color:var(--muted);">—</span>'}</td>
+      <td style="color:var(--muted);">${a.latency}</td>
+      <td style="color:var(--muted);font-size:11px;">${a.time}</td>
+    </tr>`; }).join('');
+}
+
+const SETTINGS = [
+  { label: 'Escalation Queue Name', hint: 'Zendesk group tickets route to when triage is HIGH.', value: 'Escalation Queue', type: 'text' },
+  { label: 'Churn Confidence Threshold', hint: 'Only fire churn-risk at this confidence or above.', value: 'high', type: 'select', opts: ['high','medium','low'] },
+  { label: 'Repeat Issue Threshold', hint: 'Prior tickets for the same issue (30d) that trigger escalation.', value: '2', type: 'number' },
+  { label: 'Repeat Contact Threshold', hint: 'Total prior tickets (30d) that trigger escalation.', value: '3', type: 'number' },
+  { label: 'Slack Alerts', hint: 'Post to Slack when a ticket triages HIGH.', value: true, type: 'boolean' },
+  { label: 'Claude Model', hint: 'Model used for ticket analysis.', value: 'claude-sonnet-4-6', type: 'text' },
+];
+function renderSettings() {
+  document.getElementById('settings-list').innerHTML = SETTINGS.map(s => `
+    <div class="dash-setting-row">
+      <div><div class="dash-setting-label">${s.label}</div><div class="dash-setting-hint">${s.hint}</div></div>
+      ${s.type === 'boolean'
+        ? `<label class="dash-toggle"><input type="checkbox" ${s.value ? 'checked' : ''}><span class="dash-toggle-track"><span class="dash-toggle-thumb"></span></span></label>`
+        : s.type === 'select'
+        ? `<select class="dash-setting-input">${s.opts.map(o => `<option ${o === s.value ? 'selected' : ''}>${o}</option>`).join('')}</select>`
+        : `<input class="dash-setting-input" value="${s.value}">`
+      }
+    </div>`).join('') + `<div style="padding-top:16px;display:flex;justify-content:flex-end;"><button class="dash-add-btn" style="border-radius:7px;">Save Changes</button></div>`;
+}
+
+selectTicket(0);
+renderMiniChart();
+renderConnHealth();
+renderSignalFreq();
+renderConnectorsPage();
+renderFeedback('all');
+renderActivity();
+renderSettings();
+
+/* ═══════════════════════════════════════════════════════
+   LIVE CHAT SIMULATION
+   ═══════════════════════════════════════════════════════ */
+const CHAT_CUSTOMER = {
+  name: 'Priya Nandakumar', initials: 'PN', org: 'Fenwick Logistics', orgTier: 'pro',
+  history: [
+    { id: '30112', subject: 'Duplicate charge on March invoice', status: 'Closed', url: '#' },
+  ],
+};
+
+// Each chat message; trigger:N marks a message that should fire a re-analysis after it renders.
+// keyword:true marks a message whose content should also fire the instant keyword pre-filter.
+const CHAT_SCRIPT = [
+  { from: 'customer', text: 'Hi, I was charged twice for my subscription this month', delay: 600 },
+  { from: 'agent', text: "Hi Priya! I'm really sorry to hear that — let me look into your billing right away.", delay: 1800 },
+  { from: 'customer', text: "Thanks. I've actually had this happen before too, back in March", delay: 1600 },
+  { from: 'customer', text: "This is now the second time and it's honestly pretty frustrating", delay: 1400, trigger: 1 },
+  { from: 'agent', text: "I completely understand the frustration — pulling up your account now.", delay: 2200 },
+  { from: 'customer', text: "Honestly, if this happens a third time I'm going to cancel my plan", delay: 1800, trigger: 2, keyword: true },
+  { from: 'customer', text: "This is unacceptable for something I'm paying a premium tier for", delay: 1600, trigger: 3 },
+  { from: 'agent', text: "I hear you, Priya — I'm escalating this right now to get it resolved today.", delay: 1800 },
+];
+
+// Demo analysis results keyed by trigger number — what the panel shows after each trigger fires.
+const CHAT_TRIGGERS = {
+  1: {
+    reason: 'Triggered after 3rd customer message',
+    triage: { priority: 'NORMAL', signals: ['Repeat Issue (2×/30d)'], churn_risk: false, recommended_action: 'Check billing history for the March duplicate charge — likely the same root cause recurring.' },
+    sentiment: { label: 'Frustrated', score: 6 },
+    guru: { title: 'Duplicate Charge Investigation Guide' },
+  },
+  2: {
+    reason: 'Triggered instantly — churn keyword detected ("cancel")',
+    triage: { priority: 'HIGH', queue: 'CSM + Billing', signals: ['Repeat Issue (2×/30d)', 'Churn Risk Detected', 'Billing Dispute'], churn_risk: true, churn_confidence: 'high', churn_evidence: "if this happens a third time I'm going to cancel my plan", recommended_action: 'Escalate to CSM and Billing now — agent cannot issue credits directly. Do not let this chat end without a concrete resolution commitment.' },
+    sentiment: { label: 'Frustrated', score: 8 },
+    guru: { title: 'Duplicate Charge Investigation Guide' },
+  },
+  3: {
+    reason: 'Triggered after 3rd customer message since last analysis',
+    triage: { priority: 'HIGH', queue: 'CSM + Billing', signals: ['Repeat Issue (2×/30d)', 'Churn Risk Detected', 'Billing Dispute'], churn_risk: true, churn_confidence: 'high', churn_evidence: "if this happens a third time I'm going to cancel my plan", recommended_action: 'Loop in CSM and Billing now — sentiment has moved from Frustrated to Angry. Agent cannot issue credits; Billing owns the resolution, CSM owns the relationship.' },
+    sentiment: { label: 'Angry', score: 9 },
+    guru: { title: 'Duplicate Charge Investigation Guide' },
+  },
+};
+
+let chatTimers = [];
+let chatSentimentHistory = [];
+let chatRunning = false;
+let chatUpdatedAt = null;
+let chatTickInterval = null;
+
+function resetChatSim() {
+  chatTimers.forEach(clearTimeout);
+  chatTimers = [];
+  clearInterval(chatTickInterval);
+  chatRunning = false;
+  chatSentimentHistory = [];
+  chatUpdatedAt = null;
+  document.getElementById('chat-messages').innerHTML = `
+    <div style="text-align:center;color:var(--zd-muted);font-size:12px;padding:40px 20px;">
+      Click <strong>Start Chat Simulation</strong> to watch a live conversation stream in, with the analysis panel updating in real time on the right.
+    </div>`;
+  document.getElementById('chat-panel-body').innerHTML = `
+    <div class="chat-empty-state">
+      <div class="chat-empty-icon">💬</div>
+      <div class="chat-empty-text">Groundwork Assist will analyze this conversation as it unfolds — no waiting for the chat to end.</div>
+    </div>`;
+  document.getElementById('chat-updated-label').textContent = 'Not started';
+  document.getElementById('chat-live-indicator').style.display = 'none';
+  document.getElementById('chat-play-btn').disabled = false;
+  document.getElementById('chat-play-btn').innerHTML = '▶ Start Chat Simulation';
+}
+
+function sentEmoji(label) {
+  return { Positive: '😊', Neutral: '😐', Frustrated: '😤', Angry: '😠', Distressed: '😰' }[label] || '😐';
+}
+function sentColor(label) {
+  return { Positive: '#228f67', Neutral: '#68737d', Frustrated: '#c8a84b', Angry: '#cc3340', Distressed: '#8b5cf6' }[label] || '#68737d';
+}
+
+function startChatSim() {
+  if (chatRunning) return;
+  resetChatSim();
+  chatRunning = true;
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-live-indicator').style.display = 'inline-flex';
+  document.getElementById('chat-play-btn').disabled = true;
+  document.getElementById('chat-play-btn').innerHTML = '<span class="zd-spinner"></span> Simulation running…';
+
+  // Live "updated Xs ago" ticker
+  chatTickInterval = setInterval(() => {
+    if (!chatUpdatedAt) return;
+    const secs = Math.round((Date.now() - chatUpdatedAt) / 1000);
+    document.getElementById('chat-updated-label').textContent = secs < 2 ? 'Updated just now' : `Updated ${secs}s ago`;
+  }, 1000);
+
+  let cumulativeDelay = 0;
+  CHAT_SCRIPT.forEach((msg) => {
+    cumulativeDelay += msg.delay;
+    chatTimers.push(setTimeout(() => appendChatMessage(msg), cumulativeDelay));
+    if (msg.trigger) {
+      // Fire the analysis slightly after the message renders, with a short "analyzing" beat —
+      // instant for keyword-triggered messages, a beat longer for the periodic 3-message trigger.
+      const analysisDelay = msg.keyword ? 500 : 900;
+      chatTimers.push(setTimeout(() => runChatAnalysis(msg.trigger), cumulativeDelay + analysisDelay));
+    }
+  });
+
+  chatTimers.push(setTimeout(() => {
+    document.getElementById('chat-play-btn').disabled = false;
+    document.getElementById('chat-play-btn').innerHTML = '▶ Start Chat Simulation';
+    chatRunning = false;
+  }, cumulativeDelay + 1200));
+}
+
+function appendChatMessage(msg) {
+  const box = document.getElementById('chat-messages');
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const row = document.createElement('div');
+  row.className = `chat-bubble-row ${msg.from}`;
+  row.innerHTML = `<div class="chat-bubble">${msg.text}</div><div class="chat-bubble-time">${msg.from === 'customer' ? 'Priya' : 'You'} · ${time}</div>`;
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+
+function runChatAnalysis(triggerNum) {
+  const box = document.getElementById('chat-messages');
+  box.scrollTop = box.scrollHeight;
+
+  const panelBody = document.getElementById('chat-panel-body');
+  panelBody.innerHTML = `<div class="chat-analyzing"><span class="chat-analyzing-spinner"></span>Re-analyzing conversation…</div>`;
+
+  setTimeout(() => {
+    const data = CHAT_TRIGGERS[triggerNum];
+    chatSentimentHistory.push(data.sentiment.label);
+    chatUpdatedAt = Date.now();
+    document.getElementById('chat-updated-label').textContent = 'Updated just now';
+    renderChatPanel(data);
+
+    if (data.triage.priority === 'HIGH') {
+      const panel = document.getElementById('chat-panel');
+      panel.classList.remove('flash-high');
+      void panel.offsetWidth; // restart animation
+      panel.classList.add('flash-high');
+    }
+  }, 650);
+}
+
+function renderChatPanel(data) {
+  const t = data.triage;
+  const isHigh = t.priority === 'HIGH';
+  const sigHtml = (t.signals || []).map(s => `<span class="zd-sig" style="margin-bottom:5px;">${s}</span>`).join('');
+  const churnHtml = t.churn_risk ? `<div class="zd-churn">⚠️ <div><strong>Churn risk (${t.churn_confidence} confidence):</strong> "${t.churn_evidence}"</div></div>` : '';
+
+  const trendHtml = chatSentimentHistory.map((label, i) => {
+    const isLast = i === chatSentimentHistory.length - 1;
+    return `${i > 0 ? '<span class="sent-trend-arrow">→</span>' : ''}<span class="sent-trend-chip ${isLast ? 'current' : ''}" style="background:${sentColor(label)}18;color:${sentColor(label)};">${sentEmoji(label)} ${label}</span>`;
+  }).join('');
+
+  document.getElementById('chat-panel-body').innerHTML = `
+    <div class="chat-cust-box">
+      <div class="chat-cust-avatar">${CHAT_CUSTOMER.initials}</div>
+      <div>
+        <div class="chat-cust-name">${CHAT_CUSTOMER.name}</div>
+        <div class="chat-cust-org">${CHAT_CUSTOMER.org} · ${CHAT_CUSTOMER.orgTier}</div>
+      </div>
+    </div>
+
+    <div class="chat-trigger-note">🔄 ${data.reason}</div>
+
+    <div class="zd-triage ${isHigh ? 'hi' : 'no'}" style="margin-bottom:13px;">
+      <div class="zd-triage-label">${isHigh ? `🚨 HIGH — ${t.queue || 'Escalation Queue'}` : '✅ Normal Priority'}</div>
+      <div>${sigHtml || '<span style="font-size:11px;color:var(--zd-muted);font-style:italic;">No signals yet</span>'}</div>
+      ${churnHtml}
+      <div class="zd-action" style="margin-top:6px;"><strong>Action:</strong> ${t.recommended_action}</div>
+    </div>
+
+    <div class="zd-section-label" style="color:#b8882b;margin-bottom:7px;">${sentEmoji(data.sentiment.label)} Sentiment Trend</div>
+    <div class="sent-trend">${trendHtml}</div>
+    <div style="font-size:11px;color:var(--zd-muted);margin-bottom:13px;">Current: <strong style="color:${sentColor(data.sentiment.label)};">${data.sentiment.label}</strong> · ${data.sentiment.score}/10</div>
+
+    <div class="zd-section-label" style="color:var(--purple);margin-bottom:7px;">📋 Chat History</div>
+    <div class="zd-section-body" style="padding-left:0;margin-bottom:13px;">
+      ${CHAT_CUSTOMER.history.map(h => `<div class="zd-hist-row" style="border-bottom:none;padding:2px 0;"><a href="#" class="zd-hist-link">#${h.id} ↗</a><span class="zd-hist-subj">${h.subject}</span><span class="zd-hist-status" style="background:#edf8f4;color:var(--zd-green);">${h.status}</span></div>`).join('')}
+    </div>
+
+    <div class="zd-section-label" style="color:#228f67;margin-bottom:7px;">📚 Suggested KB</div>
+    <div style="font-size:12px;"><span class="zd-kb-tag guru">GURU</span><a href="#" class="zd-kb-link">${data.guru.title} ↗</a></div>
+  `;
+}
+</script>
+</body>
+</html>
